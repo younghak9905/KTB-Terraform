@@ -164,7 +164,8 @@ resource "aws_nat_gateway" "nat_gw_2" {
   }
 }
 
-# 프라이빗 라우트 테이블 1
+
+# 🚀 NAT Gateway 연결이 필요한 프라이빗 서브넷용 라우트 테이블
 resource "aws_route_table" "prv_rt1" {
   vpc_id = aws_vpc.my_vpc.id
 
@@ -174,9 +175,25 @@ resource "aws_route_table" "prv_rt1" {
   }
 
   tags = {
-    Name = "Private-Route-Table-1"
+    Name = "Private-Route-Table-1 (NAT 연결)"
   }
 }
+
+# 🚀 NAT 없이 로컬 통신만 하는 프라이빗 서브넷용 라우트 테이블
+resource "aws_route_table" "prv_rt1_local" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  # 인터넷 연결 없음, VPC 내부 통신만 허용
+  route {
+    cidr_block = var.vpc_main_cidr
+    gateway_id = "local"
+  }
+
+  tags = {
+    Name = "Private-Route-Table-local (로컬 전용)"
+  }
+}
+
 
 # 프라이빗 라우트 테이블 2
 resource "aws_route_table" "prv_rt2" {
@@ -192,6 +209,23 @@ resource "aws_route_table" "prv_rt2" {
   }
 }
 
+
+
+# 🚀 NAT 없이 로컬 통신만 하는 프라이빗 서브넷용 라우트 테이블
+resource "aws_route_table" "prv_rt2_local" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  # 인터넷 연결 없음, VPC 내부 통신만 허용
+  route {
+    cidr_block = var.vpc_main_cidr
+    gateway_id = "local"
+  }
+
+  tags = {
+    Name = "Private-Route-Table-local (로컬 전용)"
+  }
+}
+
 # 서브넷과 라우트 테이블 연결
 resource "aws_route_table_association" "pub_subnet_1a_asso" {
   subnet_id      = aws_subnet.pub_subnet_1a.id
@@ -203,14 +237,29 @@ resource "aws_route_table_association" "pub_subnet_1c_asso" {
   route_table_id = aws_route_table.pub_rt.id
 }
 
+
+#1a private subnet
+# 🛜 NAT이 필요한 프라이빗 서브넷 연결
 resource "aws_route_table_association" "prv_subnet_1a_asso" {
   subnet_id      = aws_subnet.prv_sub_1a.id
   route_table_id = aws_route_table.prv_rt1.id
 }
 
+# 🛜 로컬 통신 전용 프라이빗 서브넷 연결
 resource "aws_route_table_association" "prv_subnet_2a_asso" {
   subnet_id      = aws_subnet.prv_sub_2a.id
-  route_table_id = aws_route_table.prv_rt1.id
+  route_table_id = aws_route_table.prv_rt1_local.id
 }
 
 
+resource "aws_route_table_association" "prv_subnet_1c_asso" {
+  subnet_id      = aws_subnet.prv_sub_1c.id
+  route_table_id = aws_route_table.prv_rt2.id
+}
+
+
+# 🛜 로컬 통신 전용 프라이빗 서브넷 연결
+resource "aws_route_table_association" "prv_subnet_2c_asso" {
+  subnet_id      = aws_subnet.prv_sub_2c.id
+  route_table_id = aws_route_table.prv_rt2_local.id
+}
