@@ -38,7 +38,7 @@ resource "aws_vpc_ipv4_cidr_block_association" "secondary_cidr" {
 # 퍼블릭 서브넷 1
 resource "aws_subnet" "pub_subnet_1a" {
   vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = cidrsubnet(aws_vpc.my_vpc.cidr_block, 1, 0)
+  cidr_block              = cidrsubnet(aws_vpc.my_vpc.cidr_block, 2, 0)
   availability_zone       = "us-east-2a"
   map_public_ip_on_launch = true
 
@@ -50,7 +50,7 @@ resource "aws_subnet" "pub_subnet_1a" {
 # 프라이빗 서브넷 1
 resource "aws_subnet" "prv_sub_1a" {
   vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = cidrsubnet(aws_vpc.my_vpc.cidr_block, 1, 1)
+  cidr_block        = cidrsubnet(aws_vpc.my_vpc.cidr_block, 2, 1)
   availability_zone = "us-east-2a"
 
   tags = {
@@ -61,7 +61,7 @@ resource "aws_subnet" "prv_sub_1a" {
 # 프라이빗 서브넷 2
 resource "aws_subnet" "prv_sub_2a" {
   vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = cidrsubnet(aws_vpc.my_vpc.cidr_block, 1, 2)
+  cidr_block        = cidrsubnet(aws_vpc.my_vpc.cidr_block, 2, 2)
   availability_zone = "us-east-2a"
 
   tags = {
