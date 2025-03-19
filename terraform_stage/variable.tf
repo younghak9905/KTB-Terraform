@@ -130,3 +130,23 @@ variable "associate_public_ip_address" {
 #variable "ebs_kms_key_id" {
 #  default = data.aws_kms_key.ebs_kms.arn
 #}
+
+
+variable "stage" {
+  type = string
+  default = "dev"
+}
+
+variable "servicename" {
+  type = string
+  default = "myservice"
+}
+
+variable "tags" {
+  type = map(string)
+  default = {
+    "Project"      = "architecture"
+    "Owner"        = "zero"
+    "Environment"  = "dev"
+  }
+}
