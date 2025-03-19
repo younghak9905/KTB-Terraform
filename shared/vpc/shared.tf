@@ -26,12 +26,6 @@ resource "aws_vpc" "my_vpc" {
   }
 }
 
-# VPC 보조 CIDR 추가
-resource "aws_vpc_ipv4_cidr_block_association" "secondary_cidr" {
-  vpc_id     = aws_vpc.my_vpc.id
-  cidr_block = var.secondary_cidr
-}
-
 # 퍼블릭 서브넷 1
 resource "aws_subnet" "pub_subnet_1a" {
   vpc_id                  = aws_vpc.my_vpc.id
