@@ -109,14 +109,14 @@ resource "aws_eip" "nat_eip_1a" {
 }
 
 # NAT 게이트웨이용 EIP - 1c
-resource "aws_eip" "nat_eip_1c" {
-  domain     = "vpc"
-  depends_on = [aws_internet_gateway.vpc_igw]
-  tags = merge(
-    { Name = "aws_eip_${var.stage}_${var.servicename}_nat_1c" },
-    var.tags
-  )
-}
+#resource "aws_eip" "nat_eip_1c" {
+#  domain     = "vpc"
+#  depends_on = [aws_internet_gateway.vpc_igw]
+#  tags = merge(
+#    { Name = "aws_eip_${var.stage}_${var.servicename}_nat_1c" },
+#    var.tags
+#  )
+#}
 
 # NAT 게이트웨이 - 1a (public_az1에 생성)
 resource "aws_nat_gateway" "vpc_nat_1a" {
@@ -130,15 +130,15 @@ resource "aws_nat_gateway" "vpc_nat_1a" {
 }
 
 # NAT 게이트웨이 - 1c (public_az2에 생성)
-resource "aws_nat_gateway" "vpc_nat_1c" {
-  allocation_id = aws_eip.nat_eip_1c.id
-  subnet_id     = aws_subnet.public_az2.id
-  depends_on    = [aws_internet_gateway.vpc_igw, aws_eip.nat_eip_1c]
-  tags = merge(
-    { Name = "aws_nat_${var.stage}_${var.servicename}_1c" },
-    var.tags
-  )
-}
+#resource "aws_nat_gateway" "vpc_nat_1c" {
+#  allocation_id = aws_eip.nat_eip_1c.id
+#  subnet_id     = aws_subnet.public_az2.id
+#depends_on    = [aws_internet_gateway.vpc_igw, aws_eip.nat_eip_1c]
+#  tags = merge(
+#    { Name = "aws_nat_${var.stage}_${var.servicename}_1c" },
+#    var.tags
+#  )
+#}
 
 # 퍼블릭 라우트 테이블
 resource "aws_route_table" "rt_pub" {
@@ -186,11 +186,11 @@ resource "aws_route" "route_to_nat_1a" {
 }
 
 # 프라이빗 라우트 테이블에서 NAT 게이트웨이 연결 - 1c
-resource "aws_route" "route_to_nat_1c" {
-  route_table_id         = aws_route_table.rt_pri_1c.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.vpc_nat_1c.id
-}
+#resource "aws_route" "route_to_nat_1c" {
+#  route_table_id         = aws_route_table.rt_pri_1c.id
+#  destination_cidr_block = "0.0.0.0/0"
+#  nat_gateway_id         = aws_nat_gateway.vpc_nat_1c.id
+#}
 
 # DB 서브넷 전용 라우트 테이블 (내부 통신만 허용)
 resource "aws_route_table" "rt_db" {
@@ -220,7 +220,7 @@ resource "aws_route_table_association" "assoc_service_az1" {
 
 resource "aws_route_table_association" "assoc_service_az2" {
   subnet_id      = aws_subnet.service_az2.id
-  route_table_id = aws_route_table.rt_pri_1c.id
+  route_table_id = aws_route_table.rt_pri_1a.id
 }
 
 
