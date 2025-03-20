@@ -156,7 +156,7 @@ resource "aws_route" "route_to_igw" {
   gateway_id             = aws_internet_gateway.vpc_igw.id
 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
 }
 

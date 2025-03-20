@@ -81,6 +81,6 @@ resource "aws_dynamodb_table" "terraform_lock" {
   }
 
   lifecycle {
-    prevent_destroy = true  # 삭제 방지
+    prevent_destroy = false  # 삭제 방지
   }
 }
