@@ -99,7 +99,7 @@ resource "aws_internet_gateway" "vpc_igw" {
 }
 
 # NAT 게이트웨이용 EIP - 1a
-resource "aws_eip" "nat_eip_1a" {
+resource "aws_eip" "nat_eip" {
   domain     = "vpc"
   depends_on = [aws_internet_gateway.vpc_igw]
   tags = merge(
@@ -119,10 +119,10 @@ resource "aws_eip" "nat_eip_1a" {
 #}
 
 # NAT 게이트웨이 - 1a (public_az1에 생성)
-resource "aws_nat_gateway" "vpc_nat_1a" {
-  allocation_id = aws_eip.nat_eip_1a.id
+resource "aws_nat_gateway" "vpc_nat" {
+  allocation_id = aws_eip.nat_eip.id
   subnet_id     = aws_subnet.public_az1.id
-  depends_on    = [aws_internet_gateway.vpc_igw, aws_eip.nat_eip_1a]
+  depends_on    = [aws_internet_gateway.vpc_igw, aws_eip.nat_eip]
   tags = merge(
     { Name = "aws_nat_${var.stage}_${var.servicename}_1a" },
     var.tags
@@ -182,15 +182,15 @@ resource "aws_route_table" "rt_pri_1c" {
 resource "aws_route" "route_to_nat_1a" {
   route_table_id         = aws_route_table.rt_pri_1a.id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.vpc_nat_1a.id
+  nat_gateway_id         = aws_nat_gateway.vpc_nat.id
 }
 
 # 프라이빗 라우트 테이블에서 NAT 게이트웨이 연결 - 1c
-#resource "aws_route" "route_to_nat_1c" {
-#  route_table_id         = aws_route_table.rt_pri_1c.id
-#  destination_cidr_block = "0.0.0.0/0"
-#  nat_gateway_id         = aws_nat_gateway.vpc_nat_1c.id
-#}
+resource "aws_route" "route_to_nat_1c" {
+  route_table_id         = aws_route_table.rt_pri_1c.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.vpc_nat.id
+}
 
 # DB 서브넷 전용 라우트 테이블 (내부 통신만 허용)
 resource "aws_route_table" "rt_db" {
@@ -220,7 +220,7 @@ resource "aws_route_table_association" "assoc_service_az1" {
 
 resource "aws_route_table_association" "assoc_service_az2" {
   subnet_id      = aws_subnet.service_az2.id
-  route_table_id = aws_route_table.rt_pri_1a.id
+  route_table_id = aws_route_table.rt_pri_1c.id
 }
 
 
