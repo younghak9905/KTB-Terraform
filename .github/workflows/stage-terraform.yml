@@ -113,8 +113,8 @@ jobs:
       - name: Terraform Import IAM Resources
         run: |
           cd terraform_stage
-          terraform import module.iam_service_role.aws_iam_role.ec2-iam-role aws-iam-{{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role || true
-          terraform import module.iam_service_role.aws_iam_instance_profile.ec2-iam-role-profile aws-iam-{{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role-profile || true
+          terraform import module.iam_service_role.aws_iam_role.ec2-iam-role aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role || true
+          terraform import module.iam_service_role.aws_iam_instance_profile.ec2-iam-role-profile aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role-profile || true
 
       - name: Terraform Apply
         run: cd terraform_stage; terraform apply -auto-approve -input=false
@@ -139,7 +139,7 @@ jobs:
           cd terraform_stage; terraform init -reconfigure\
             -backend-config="region=us-east-2" \
             -backend-config="bucket=zero9905-terraformstate" \
-            -backend-config="key={{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
+            -backend-config="key=${{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
             -backend-config="dynamodb_table=zero9905-terraformstate"
 
   backend_destroy:
@@ -167,7 +167,7 @@ jobs:
            cd terraform_stage; terraform init -reconfigure\
             -backend-config="region=us-east-2" \
             -backend-config="bucket=zero9905-terraformstate" \
-            -backend-config="key={{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
+            -backend-config="key=${{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
             -backend-config="dynamodb_table=zero9905-terraformstate"
 
       - name: Terraform Destroy
