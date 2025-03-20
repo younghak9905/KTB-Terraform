@@ -75,11 +75,6 @@ resource "aws_ecs_service" "ecs_service" {
     container_port   = 80
   }
 
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
-
-  depends_on = [aws_lb_listener.lb-listener-80]
 }
 
 resource "aws_security_group" "sg_ecs" {
