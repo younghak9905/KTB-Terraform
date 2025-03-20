@@ -138,7 +138,7 @@ module "alb" {
 
   # Target Group 설정
   target_type           = "instance"
-  instance_ids          = module.ecs.instance_ids
+  instance_ids          = module.ecs_ec2.instance_ids
   port                  = 80
   hc_path               = "/"
   hc_healthy_threshold  = 5
@@ -150,7 +150,7 @@ module "alb" {
 
 
 module "ecs_ec2" {
-  source                      = "../modules/ecs-ec2"
+  source                      = "../modules/ecs_ec2"
   cluster_name                = "my-ecs-cluster"
   ecs_ami_id                  = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type               = "t3.micro"
