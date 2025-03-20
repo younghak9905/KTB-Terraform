@@ -102,22 +102,6 @@ resource "aws_security_group" "sg-ec2" {
         var.tags)
 }
 
-
-
-module "ecs_ec2" {
-  source                      = "../modules/ecs-ec2"
-  cluster_name                = "my-ecs-cluster"
-  ecs_ami_id                  = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
-  instance_type               = "t3.micro"
-  key_name                    = "my-key"
-  user_data                   = "#!/bin/bash\nyum update -y"
-  instance_name               = var.servicename
-  tags                        = { Environment = "stage", Project = "myproject",Type="ecs-ec2" }
-  vpc_id                      = var.vpc_id
-  region                      = var.region
-  subnet_ids                  = [vvar.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
-}
-
 module "asg" {
   source                      = "../modules/asg"
   asg_name                    = "my-ecs-asg"
@@ -162,6 +146,21 @@ module "alb" {
 
   # 보안 그룹 설정
   sg_allow_comm_list = ["0.0.0.0/0"] # 필요 시 수정
+}
+
+
+module "ecs_ec2" {
+  source                      = "../modules/ecs-ec2"
+  cluster_name                = "my-ecs-cluster"
+  ecs_ami_id                  = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  instance_type               = "t3.micro"
+  key_name                    = "my-key"
+  user_data                   = "#!/bin/bash\nyum update -y"
+  instance_name               = var.servicename
+  tags                        = { Environment = "stage", Project = "myproject",Type="ecs-ec2" }
+  vpc_id                      = var.vpc_id
+  region                      = var.region
+  subnet_ids                  = [vvar.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
 }
 
 
