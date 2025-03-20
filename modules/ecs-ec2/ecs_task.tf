@@ -32,3 +32,24 @@ resource "aws_ecs_task_definition" "ecs_task" {
     }
   ])
 }
+
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name               = "${var.servicename}-ecs-task-execution-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_cloudwatch_log_group" "ecs_logs" {
+  name              = "/ecs/${var.servicename}"
+  retention_in_days = 7
+}

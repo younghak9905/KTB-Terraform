@@ -126,7 +126,7 @@ module "alb" {
   stage         = var.stage
   servicename   = var.servicename
   vpc_id        = module.vpc.vpc_id
-  subnet_ids    = [module.vpc.public-az1.id, module.vpc.public-az2.id]
+  subnet_ids    = [module.vpc.public_az1.id, module.vpc.public_az2.id]
   tags          = var.tags
 
   # ALB 설정
