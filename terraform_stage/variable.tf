@@ -22,7 +22,7 @@ variable "tags" {
 #VPC
 variable "az" {
   type = list(any)
-  default = [ "ap-northeast-2a", "ap-northeast-2c" ]
+  default = [ "us-east-2a", "us-east-2c" ]
 }
 variable "vpc_ip_range" {
   type = string

@@ -4,22 +4,6 @@ variable "vpc_ip_range" {
   type        = string
 }
 
-# 서브넷 리스트 (기존 단일 값 → 리스트로 변환)
-variable "subnet_public_list" {
-  description = "List of public subnet CIDRs"
-  type        = list(string)
-}
-
-variable "subnet_service_list" {
-  description = "List of private service subnet CIDRs (each with a NAT Gateway)"
-  type        = list(string)
-}
-
-variable "subnet_db_list" {
-  description = "List of private DB subnet CIDRs (local access only)"
-  type        = list(string)
-}
-
 variable "subnet_public_az1" {
   description = "CIDR block for public subnet in AZ1"
   type        = string
