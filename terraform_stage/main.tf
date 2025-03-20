@@ -26,6 +26,7 @@ module "vpc" {
   subnet_db_az1       = var.subnet_db_az1
   subnet_db_az2       = var.subnet_db_az2
 
+
   ##SecurityGroup
   #sg_allow_comm_list = concat(var.ext_sg_allow_list, ["${module.vpc.nat_ip}/32", var.vpc_ip_range])
 
@@ -37,71 +38,70 @@ module "vpc" {
   #auto_accept_shared_attachments = true
   #security_attachments_propagation = merge(var.security_attachments_propagation, var.security_attachments)
 }
+/*
+module "zero9905-ec2" {
+  source              = "../modules/instance"
 
-# module "jung9546-ec2" {
-#   source              = "../modules/instance"
+  stage        = var.stage
+  servicename  = "${var.servicename}"
+  tags         = var.tags
 
-#   stage        = var.stage
-#   servicename  = "${var.servicename}"
-#   tags         = var.tags
+  ami                       = var.ami
+  instance_type             = var.instance_type
+  ebs_size                  = var.instance_ebs_size
+  user_data                 = <<-EOF
+#!/bin/bash 
+yum update -y 
+yum install -y https://s3.ap-northeast-2.amazonaws.com/amazon-ssm-ap-northeast-2/latest/linux_amd64/amazon-ssm-agent.rpm
+EOF
+  kms_key_id                = var.ebs_kms_key_id
+  ec2-iam-role-profile-name = module.iam-service-role.ec2-iam-role-profile.name
+  ssh_allow_comm_list       = [var.subnet_service_az1, var.subnet_service_az2]
 
-#   ami                       = var.ami
-#   instance_type             = var.instance_type
-#   ebs_size                  = var.instance_ebs_size
-#   #user_data                 = var.instance_user_data
-#   kms_key_id                = var.ebs_kms_key_id
-#   ec2-iam-role-profile-name = module.iam-service-role.ec2-iam-role-profile.name
-#   ssh_allow_comm_list       = [var.subnet_service_az1, var.subnet_service_az2]
+  associate_public_ip_address = var.associate_public_ip_address
 
-#   associate_public_ip_address = var.associate_public_ip_address
+  subnet_id = module.vpc.public-az1.id
+  vpc_id    = module.vpc.vpc_id
+  sg_ec2_ids = [aws_security_group.sg-ec2.id]
+  depends_on = [module.vpc.sg-ec2-comm, module.iam-service-role.ec2-iam-role-profile]
+}*/
 
-#   subnet_id = module.vpc.public-az1.id
-#   vpc_id    = module.vpc.vpc_id
-#   user_data = <<-EOF
-# #!/bin/bash 
-# yum update -y 
-# yum install -y https://s3.ap-northeast-2.amazonaws.com/amazon-ssm-ap-northeast-2/latest/linux_amd64/amazon-ssm-agent.rpm
-# EOF
-#   ##SecurityGroup
-#   sg_ec2_ids = [aws_security_group.sg-ec2.id]
-#   #depends_on = [module.vpc.sg-ec2-comm, module.iam-service-role.ec2-iam-role-profile]
-# }
+resource "aws_security_group" "sg-ec2" {
+  name   = "aws-sg-${var.stage}-${var.servicename}-ec2"
+  vpc_id = module.vpc.vpc_id
 
-# resource "aws_security_group" "sg-ec2" {
-#   name   = "aws-sg-${var.stage}-${var.servicename}-ec2"
-#   vpc_id = module.vpc.vpc_id
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = ""
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = ""
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = ""
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = merge(tomap({
+         Name = "aws-sg-${var.stage}-${var.servicename}-ec2"}), 
+        var.tags)
+}
 
-#   ingress {
-#     from_port   = 443
-#     to_port     = 443
-#     protocol    = "TCP"
-#     cidr_blocks = ["0.0.0.0/0"]
-#     description = ""
-#   }
-#   ingress {
-#     from_port   = 80
-#     to_port     = 80
-#     protocol    = "TCP"
-#     cidr_blocks = ["0.0.0.0/0"]
-#     description = ""
-#   }
-#   ingress {
-#     from_port   = 22
-#     to_port     = 22
-#     protocol    = "TCP"
-#     cidr_blocks = ["0.0.0.0/0"]
-#     description = ""
-#   }
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-#   tags = merge(tomap({
-#          Name = "aws-sg-${var.stage}-${var.servicename}-ec2"}), 
-#         var.tags)
-# }
 
 #RDS
 # module "rds" {
