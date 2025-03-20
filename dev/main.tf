@@ -12,9 +12,6 @@ module "vpc" {
     subnet_db_az1      = "20.0.5.0/24"
     subnet_db_az2      = "20.0.6.0/24"
 
-    subnet_public_list = [subnet_public_az1.id, subnet_public_az2.id]
-    subnet_service_list = [subnet_service_az1.id, subnet_service_az2.id]  # NAT 개별 적용
-    subnet_db_list      = [subnet_db_az1.id, subnet_db_az2.id]  # 내부 통신 전용
     # 공통 태그 및 환경 변수
     stage               = "dev"
     servicename         = "myservice"
