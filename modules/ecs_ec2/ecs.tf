@@ -66,11 +66,11 @@ resource "aws_ecs_service" "ecs_service" {
 
   network_configuration {
     subnets         = var.subnet_ids
-    security_groups = [aws_security_group.sg-ecs.id]
+    security_groups = [aws_security_group.sg_ecs.id]
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target-group.arn
+    target_group_arn = var.alb_listener_arn
     container_name   = "nginx-container"
     container_port   = 80
   }

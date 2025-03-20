@@ -79,3 +79,13 @@ variable "subnet_ids" {
   description = "List of subnet IDs for ECS container instances"
   type        = list(string)
 }
+
+variable "alb_target_group_arn" {
+  description = "ARN of the ALB Target Group from the ALB module"
+  type        = string
+}
+
+variable "alb_listener_arn" {
+  description = "ARN of the ALB Listener from the ALB module"
+  type        = string
+}

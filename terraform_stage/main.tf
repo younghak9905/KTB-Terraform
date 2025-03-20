@@ -163,6 +163,11 @@ module "ecs_ec2" {
   subnet_ids                  = [var.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
   stage                       = var.stage
   servicename                 = var.servicename 
+
+  # ALB 관련 값 전달
+  alb_target_group_arn = module.alb.target_group_arn
+  alb_listener_arn     = module.alb.listener_arn
+ 
 }
 
 

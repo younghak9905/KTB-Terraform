@@ -50,6 +50,8 @@ resource "aws_lb_listener" "lb-listener-80" {
 #   depends_on = [aws_lb_target_group.target-group]
 # }
 
+
+
 resource "aws_lb_target_group" "target-group" {
   name        = "aws-alb-tg-${var.stage}-${var.servicename}"
   port        = var.port
