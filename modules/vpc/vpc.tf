@@ -134,17 +134,6 @@ resource "aws_nat_gateway" "vpc-nat" {
   )
 }
 
-resource "aws_nat_gateway" "vpc-nat" {
-  count         = length(var.subnet_service_list)  # NAT도 개수만큼 생성
-  allocation_id = aws_eip.nat-eip[count.index].id
-  subnet_id     = var.subnet_service_list[count.index]  # 서비스 서브넷 연결
-  depends_on    = [aws_internet_gateway.vpc-igw]
-
-  tags = merge(
-    tomap({ Name = "aws-nat-${var.stage}-${var.servicename}-${count.index + 1}" }),
-    var.tags
-  )
-}
 
 #routetable
 resource "aws_route_table" "aws-rt-pub" {

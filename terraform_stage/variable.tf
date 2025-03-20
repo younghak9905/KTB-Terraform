@@ -13,7 +13,9 @@ variable "servicename" {
 variable "tags" {
   type = map(string)
   default = {
-    "name" = "zero9905_VPC"
+    "Project"      = "architecture"
+    "Owner"        = "zero"
+    "Environment"  = "dev"
   }
 }
 
@@ -131,22 +133,7 @@ variable "associate_public_ip_address" {
 #  default = data.aws_kms_key.ebs_kms.arn
 #}
 
-
-variable "stage" {
+variable "aws_account_id" {
   type = string
-  default = "dev"
 }
 
-variable "servicename" {
-  type = string
-  default = "myservice"
-}
-
-variable "tags" {
-  type = map(string)
-  default = {
-    "Project"      = "architecture"
-    "Owner"        = "zero"
-    "Environment"  = "dev"
-  }
-}
