@@ -6,7 +6,7 @@ terraform {
     key  = "dev/terraform/terraform.tfstate"
     region = "us-east-2"
     encrypt = true
-    dynamodb_table = "zero9905-terraform-state"
+    dynamodb_table = "zero9905-terraformstate"
   }
 }
 
