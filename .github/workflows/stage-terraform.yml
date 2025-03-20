@@ -121,6 +121,8 @@ jobs:
 
   backend_setup:
     runs-on: ubuntu-latest
+    env:
+      CURRENT_ENV: stage
     needs: terraform
     steps:
       - name: Checkout repository
@@ -144,6 +146,8 @@ jobs:
 
   backend_destroy:
     runs-on: ubuntu-latest
+    env:
+      CURRENT_ENV: stage
     needs: backend_setup
     steps:
       - name: Checkout repository
