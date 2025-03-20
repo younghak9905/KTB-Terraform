@@ -32,13 +32,13 @@ output "db_az2" {
 
 output "nat_ip" {
   value = concat(
-    [aws_eip.nat_eip_1a.public_ip],
-    [aws_eip.nat_eip_1c.public_ip]
+    [aws_eip.nat_eip_1a.public_ip]
+    #[aws_eip.nat_eip_1c.public_ip]
   )
 }
 
 output "nat_id" {
-  value = [aws_nat_gateway.vpc_nat_1a.id, aws_nat_gateway.vpc_nat_1c.id]
+  value = [aws_nat_gateway.vpc_nat_1a.id]#, aws_nat_gateway.vpc_nat_1c.id]
 }
 
 output "private_route_table_ids" {
