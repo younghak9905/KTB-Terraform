@@ -158,9 +158,11 @@ module "ecs_ec2" {
   user_data                   = "#!/bin/bash\nyum update -y"
   instance_name               = var.servicename
   tags                        = { Environment = "stage", Project = "myproject",Type="ecs-ec2" }
-  vpc_id                      = var.vpc_id
+  vpc_id                      = module.vpc.vpc_id
   region                      = var.region
-  subnet_ids                  = [vvar.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
+  subnet_ids                  = [var.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
+  stage                       = var.stage
+  servicename                 = var.servicename 
 }
 
 
