@@ -24,7 +24,7 @@ resource "aws_iam_instance_profile" "ec2-iam-role-profile" {
   role = aws_iam_role.ec2-iam-role.name
 }
 
-resource "aws_iam_role" "terraform_backend_role" {
+/*resource "aws_iam_role" "terraform_backend_role" {
   name = "TerraformS3Role"
 
   assume_role_policy = <<EOF
@@ -47,4 +47,4 @@ EOF
 resource "aws_iam_role_policy_attachment" "terraform_backend_attach" {
   role       = aws_iam_role.terraform_backend_role.name
   policy_arn = aws_iam_policy.terraform_backend_policy.arn
-}
+}*/

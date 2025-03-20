@@ -3,5 +3,4 @@ module "iam_service_role" {
   stage       = var.stage
   servicename = var.servicename
   tags        = var.tags  
-  aws_account_id = var.aws_account_id
 }

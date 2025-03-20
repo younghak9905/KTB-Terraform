@@ -133,7 +133,3 @@ variable "associate_public_ip_address" {
 #  default = data.aws_kms_key.ebs_kms.arn
 #}
 
-variable "aws_account_id" {
-  type = string
-}
-
