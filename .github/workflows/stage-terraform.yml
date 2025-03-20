@@ -19,7 +19,7 @@ on:
 
 env:
   AWS_REGION: us-east-2   # set this to your preferred AWS region
-  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
 
 jobs:
   terraform:
