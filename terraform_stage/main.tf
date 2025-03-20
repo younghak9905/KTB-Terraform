@@ -33,9 +33,9 @@ module "vpc" {
   subnet_db_az2  = var.subnet_db_az2
 
 
-  subnet_public_list = [subnet_public_az1, subnet_public_az2]
-  subnet_service_list = [subnet_service_az1, subnet_service_az2]  # NAT 개별 적용
-  subnet_db_list      = [subnet_db_az1, subnet_db_az2]  # 내부 통신 전용
+  subnet_public_list = [subnet_public_az1.id, subnet_public_az2.id]
+  subnet_service_list = [subnet_service_az1.id, subnet_service_az2.id]  # NAT 개별 적용
+  subnet_db_list      = [subnet_db_az1.id, subnet_db_az2.id]  # 내부 통신 전용
 
  
   ##SecurityGroup

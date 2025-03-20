@@ -1,12 +1,3 @@
-# vpc/subnet관련 소스
-# public subnet az1, 2
-# service subnet az1, 2
-# db subnet az1, 2
-# igw
-# nat
-# routetable pub,pri
-# routetable association
-
 # VPC 생성
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_ip_range
@@ -94,119 +85,113 @@ resource "aws_subnet" "db_az2" {
   )
 }
 
-# # RDS Subnet Group 
-# # Fowler - Merge이후 주석 삭제
-# resource "aws_db_subnet_group" "db-subnet-group-gitlab" {
-#   name                    = "aws-db-subnet-group-gitlab"
-#   subnet_ids              = [aws_subnet.db-az1.id, aws_subnet.db-az2.id]
-#   tags                    = merge(tomap({
-#                             Name = "aws-db-subnet-group-gitlab"}), 
-#                             var.tags)
-# }
-
-# # redis Subnet Group 
-# # Fowler - Merge이후 주석 삭제
-# resource "aws_elasticache_subnet_group" "redis-subnet-group-gitlab" {
-#   name                    = "aws-redis-subnet-group-gitlab"
-#   subnet_ids              = [aws_subnet.db-az1.id, aws_subnet.db-az2.id]
-#   tags                    = merge(tomap({
-#                             Name = "aws-redis-subnet-group-gitlab"}), 
-#                             var.tags)
-# }
-
-# igw
-resource "aws_internet_gateway" "vpc-igw" {
-  vpc_id = aws_vpc.aws-vpc.id
-  tags = merge(tomap({
-         Name = "aws-igw-${var.stage}-${var.servicename}"}), 
-        var.tags)
-}
-
-resource "aws_nat_gateway" "vpc-nat" {
-  count         = length(var.subnet_service_list)  # NAT도 개수만큼 생성
-  allocation_id = aws_eip.nat-eip[count.index].id
-  subnet_id     = var.subnet_service_list[count.index]  # 서비스 서브넷 연결
-  depends_on    = [aws_internet_gateway.vpc-igw]
-
+# 인터넷 게이트웨이 (IGW)
+resource "aws_internet_gateway" "vpc_igw" {
+  vpc_id = aws_vpc.main.id
   tags = merge(
-    tomap({ Name = "aws-nat-${var.stage}-${var.servicename}-${count.index + 1}" }),
+    { Name = "aws-igw-${var.stage}-${var.servicename}" },
     var.tags
   )
 }
 
-
-#routetable
-resource "aws_route_table" "aws-rt-pub" {
-  vpc_id = aws_vpc.aws-vpc.id
-  tags = merge(tomap({
-         Name = "aws-rt-${var.stage}-${var.servicename}-pub"}), 
-        var.tags)
+# NAT 게이트웨이에 사용할 Elastic IP (EIP)
+resource "aws_eip" "nat_eip" {
+  count = length(var.subnet_service_list)
+  vpc   = true
 }
 
-resource "aws_route" "route-to-igw" {
-  route_table_id         = aws_route_table.aws-rt-pub.id
+# NAT 게이트웨이 (각 서비스 서브넷에 생성)
+resource "aws_nat_gateway" "vpc_nat" {
+  count         = length(var.subnet_service_list)
+  allocation_id = aws_eip.nat_eip[count.index].id
+  subnet_id     = var.subnet_service_list[count.index]
+  depends_on    = [aws_internet_gateway.vpc_igw]
+
+  tags = merge(
+    { Name = "aws-nat-${var.stage}-${var.servicename}-${count.index + 1}" },
+    var.tags
+  )
+}
+
+# 퍼블릭 라우트 테이블
+resource "aws_route_table" "rt_pub" {
+  vpc_id = aws_vpc.main.id
+  tags = merge(
+    { Name = "aws-rt-${var.stage}-${var.servicename}-pub" },
+    var.tags
+  )
+}
+
+# 퍼블릭 라우트 테이블의 인터넷 게이트웨이 연결
+resource "aws_route" "route_to_igw" {
+  route_table_id         = aws_route_table.rt_pub.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id = aws_internet_gateway.vpc-igw.id
+  gateway_id             = aws_internet_gateway.vpc_igw.id
+
   lifecycle {
     create_before_destroy = true
   }
 }
 
-resource "aws_route_table" "aws-rt-pri" {
+# 서비스 서브넷 전용 프라이빗 라우트 테이블 (각각 생성)
+resource "aws_route_table" "rt_pri" {
   count  = length(var.subnet_service_list)
-  vpc_id = aws_vpc.aws-vpc.id
+  vpc_id = aws_vpc.main.id
 
   tags = merge(
-    tomap({ Name = "aws-rt-${var.stage}-${var.servicename}-pri-${count.index + 1}" }),
+    { Name = "aws-rt-${var.stage}-${var.servicename}-pri-${count.index + 1}" },
     var.tags
   )
 }
 
-resource "aws_route" "route-to-nat" {
+# 프라이빗 라우트 테이블에서 NAT 게이트웨이 연결
+resource "aws_route" "route_to_nat" {
   count                  = length(var.subnet_service_list)
-  route_table_id         = aws_route_table.aws-rt-pri[count.index].id
+  route_table_id         = aws_route_table.rt_pri[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.vpc-nat[count.index].id
+  nat_gateway_id         = aws_nat_gateway.vpc_nat[count.index].id
 }
 
-# DB 서브넷 전용 라우트 테이블 (인터넷 차단)
-resource "aws_route_table" "aws-rt-db" {
+# DB 서브넷 전용 라우트 테이블 (내부 통신만 허용)
+resource "aws_route_table" "rt_db" {
   vpc_id = aws_vpc.main.id
 
-  tags = merge(tomap({
-         Name = "aws-rt-${var.stage}-${var.servicename}-db"}), 
-        var.tags)
+  tags = merge(
+    { Name = "aws-rt-${var.stage}-${var.servicename}-db" },
+    var.tags
+  )
 }
 
-# DB 서브넷은 VPC 내부(local) 트래픽만 허용
-resource "aws_route" "route-to-local" {
-  route_table_id         = aws_route_table.aws-rt-db.id
-  destination_cidr_block = var.vpc_ip_range  # 전체 VPC 범위만 허용
+# DB 라우트 테이블에서 VPC 내부 통신만 허용하는 경로 설정
+resource "aws_route" "route_to_local" {
+  route_table_id         = aws_route_table.rt_db.id
+  destination_cidr_block = var.vpc_ip_range
   gateway_id             = "local"
 }
 
-#routetable association
-resource "aws_route_table_association" "public-az1" {
- subnet_id      = aws_subnet.public-az1.id
- route_table_id = aws_route_table.aws-rt-pub.id
-}
-resource "aws_route_table_association" "public-az2" {
- subnet_id      = aws_subnet.public-az2.id
- route_table_id = aws_route_table.aws-rt-pub.id
+# 라우트 테이블 연결
+
+# 퍼블릭 서브넷과 퍼블릭 라우트 테이블 연결
+resource "aws_route_table_association" "assoc_public_az1" {
+  subnet_id      = aws_subnet.public_az1.id
+  route_table_id = aws_route_table.rt_pub.id
 }
 
-# 🔵 서비스 서브넷 - 개별 NAT 게이트웨이 사용 (각 NAT-GW에 연결)
-resource "aws_route_table_association" "service" {
-  count = length(var.subnet_service_list)
+resource "aws_route_table_association" "assoc_public_az2" {
+  subnet_id      = aws_subnet.public_az2.id
+  route_table_id = aws_route_table.rt_pub.id
+}
 
+# 서비스 서브넷과 프라이빗 라우트 테이블 연결
+resource "aws_route_table_association" "assoc_service" {
+  count          = length(var.subnet_service_list)
   subnet_id      = var.subnet_service_list[count.index]
-  route_table_id = aws_route_table.aws-rt-pri[count.index].id
+  route_table_id = aws_route_table.rt_pri[count.index].id
 }
 
-# 🟣 DB 서브넷 - 인터넷 연결 없이 내부 통신만 허용 (local route)
-resource "aws_route_table_association" "db" {
-  for_each = toset(var.subnet_db_list)
-
-  subnet_id      = each.value
-  route_table_id = aws_route_table.aws-rt-db.id
+# DB 서브넷과 DB 라우트 테이블 연결
+resource "aws_route_table_association" "assoc_db" {
+  for_each      = toset(var.subnet_db_list)
+  subnet_id     = each.value
+  route_table_id = aws_route_table.rt_db.id
 }
