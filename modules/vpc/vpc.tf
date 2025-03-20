@@ -201,13 +201,6 @@ resource "aws_route_table" "rt_db" {
   )
 }
 
-# DB 라우트 테이블에서 로컬 경로 설정 (VPC 내부만)
-resource "aws_route" "route_to_local" {
-  route_table_id         = aws_route_table.rt_db.id
-  destination_cidr_block = var.vpc_ip_range
-  gateway_id             = "local"
-}
-
 # 라우트 테이블 연결
 
 resource "aws_route_table_association" "assoc_public_az1" {
@@ -229,6 +222,7 @@ resource "aws_route_table_association" "assoc_service_az2" {
   subnet_id      = aws_subnet.service_az2.id
   route_table_id = aws_route_table.rt_pri_1c.id
 }
+
 
 resource "aws_route_table_association" "assoc_db_az1" {
   subnet_id      = aws_subnet.db_az1.id
