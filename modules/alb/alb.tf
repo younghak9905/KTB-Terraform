@@ -84,6 +84,8 @@ resource "aws_lb_target_group_attachment" "target-group-attachment" {
   depends_on = [aws_lb_target_group.target-group]
 }
 
+
+
 # ALB 보안 그룹
 resource "aws_security_group" "sg-alb" {
   name   = "aws-sg-${var.stage}-${var.servicename}-alb"
@@ -119,16 +121,16 @@ resource "aws_security_group" "sg-alb" {
   )
 }
 
-resource "aws_route53_record" "alb-record" {
-  count = var.domain != "" ? 1 : 0
-
-  zone_id = var.hostzone_id
-  name    = "${var.stage}-${var.servicename}.${var.domain}"
-  type    = "A"
-
-  alias {
-    name                   = aws_lb.alb.dns_name
-    zone_id                = aws_lb.alb.zone_id
-    evaluate_target_health = true
-  }
-}
+#resource "aws_route53_record" "alb-record" {
+#  count = var.domain != "" ? 1 : 0
+#
+#  zone_id = var.hostzone_id
+#  name    = "${var.stage}-${var.servicename}.${var.domain}"
+#  type    = "A"#
+#
+#  alias {
+#    name                   = aws_lb.alb.dns_name
+#    zone_id                = aws_lb.alb.zone_id
+#    evaluate_target_health = true
+#  }
+#}

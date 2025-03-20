@@ -103,6 +103,69 @@ resource "aws_security_group" "sg-ec2" {
 }
 
 
+
+module "ecs_ec2" {
+  source                      = "../modules/ecs-ec2"
+  cluster_name                = "my-ecs-cluster"
+  ecs_ami_id                  = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  instance_type               = "t3.micro"
+  key_name                    = "my-key"
+  user_data                   = "#!/bin/bash\nyum update -y"
+  instance_name               = var.servicename
+  tags                        = { Environment = "stage", Project = "myproject",Type="ecs-ec2" }
+  vpc_id                      = var.vpc_id
+  region                      = var.region
+  subnet_ids                  = [vvar.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
+}
+
+module "asg" {
+  source                      = "../modules/asg"
+  asg_name                    = "my-ecs-asg"
+  desired_capacity            = 2
+  min_size                    = 1
+  max_size                    = 3
+  launch_template_id          = module.ecs_ec2.launch_template_id
+  launch_template_version     = module.ecs_ec2.launch_template_version
+  subnet_ids                  = [var.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
+  health_check_type           = "EC2"
+  health_check_grace_period   = 300
+  instance_name               = var.servicename
+  tags                        = { Environment = "stage", Project = "myproject",Type="asg" }
+  stage                       = var.stage    
+  servicename                 = var.servicename  
+}
+
+module "alb" {
+  source = "../modules/alb"
+
+  # 공통 변수
+  stage         = var.stage
+  servicename   = var.servicename
+  vpc_id        = module.vpc.vpc_id
+  subnet_ids    = [module.vpc.public-az1.id, module.vpc.public-az2.id]
+  tags          = var.tags
+
+  # ALB 설정
+  internal              = false
+  aws_s3_lb_logs_name   = var.aws_s3_lb_logs_name
+  idle_timeout          = 60
+  #domain               = var.domain
+  #hostzone_id          = var.az.id
+
+  # Target Group 설정
+  target_type           = "instance"
+  instance_ids          = module.ecs.instance_ids
+  port                  = 80
+  hc_path               = "/"
+  hc_healthy_threshold  = 5
+  hc_unhealthy_threshold = 2
+
+  # 보안 그룹 설정
+  sg_allow_comm_list = ["0.0.0.0/0"] # 필요 시 수정
+}
+
+
+
 #RDS
 # module "rds" {
 #   #default engin aurora-mysql8.0
