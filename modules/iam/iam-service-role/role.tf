@@ -43,40 +43,6 @@ resource "aws_iam_role" "terraform_backend_role" {
 EOF
 }
 
-resource "aws_iam_policy" "terraform_backend_policy" {
-  name        = "TerraformBackendPolicy"
-  description = "Permissions for Terraform backend"
-  
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket",
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:DeleteObject"
-      ],
-      "Resource": [
-        "arn:aws:s3:::zero9905-terraformstate",
-        "arn:aws:s3:::zero9905-terraformstate/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "dynamodb:PutItem",
-        "dynamodb:GetItem",
-        "dynamodb:DeleteItem"
-      ],
-      "Resource": "arn:aws:dynamodb:::table/zero9905-terraformstate"
-    }
-  ]
-}
-EOF
-}
 
 resource "aws_iam_role_policy_attachment" "terraform_backend_attach" {
   role       = aws_iam_role.terraform_backend_role.name
