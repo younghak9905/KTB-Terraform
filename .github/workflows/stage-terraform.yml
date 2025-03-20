@@ -127,7 +127,8 @@ jobs:
           cd terraform_stage; terraform init -reconfigure\
             -backend-config="region=us-east-2" \
             -backend-config="bucket=zero9905-terraformstate" \
-            -backend-config="key=stage/terraform/terraform.tfstate"
+            -backend-config="key=stage/terraform/terraform.tfstate" \
+            -backend-config="dynamodb_table=zero9905-terraformstate"
 
   backend_destroy:
     runs-on: ubuntu-latest
@@ -151,10 +152,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_DEV_ZERO9905_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_DEV_ZERO9905_AWS_SECRET_ACCESS_KEY }}
         run: |
-          cd terraform_stage; terraform init -reconfigure\
+           cd terraform_stage; terraform init -reconfigure\
             -backend-config="region=us-east-2" \
             -backend-config="bucket=zero9905-terraformstate" \
-            -backend-config="key=stage/terraform/terraform.tfstate"
+            -backend-config="key=stage/terraform/terraform.tfstate" \
+            -backend-config="dynamodb_table=zero9905-terraformstate"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.confirm_destroy == 'DESTROY' }}
