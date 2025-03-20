@@ -10,34 +10,26 @@ terraform {
   }
 }
 
-##Sharedservic resources
 module "vpc" {
   source              = "../modules/vpc"
+  stage               = var.stage
+  servicename         = var.servicename
+  tags                = var.tags
 
-  stage       = var.stage
-  servicename = var.servicename
-  tags        = var.tags
-  # region     = var.region
-  # kms_arn = var.s3_kms_key_id
+  vpc_ip_range        = var.vpc_ip_range
+  az                  = var.az
 
-  vpc_ip_range = var.vpc_ip_range
-  az           = var.az
+  subnet_public_az1   = var.subnet_public_az1
+  subnet_public_az2   = var.subnet_public_az2
+  subnet_service_az1  = var.subnet_service_az1
+  subnet_service_az2  = var.subnet_service_az2
+  subnet_db_az1       = var.subnet_db_az1
+  subnet_db_az2       = var.subnet_db_az2
 
-  
+  subnet_public_list  = [var.subnet_public_az1, var.subnet_public_az2]
+  subnet_service_list = [var.subnet_service_az1, var.subnet_service_az2]
+  subnet_db_list      = [var.subnet_db_az1, var.subnet_db_az2]
 
-  subnet_public_az1 = var.subnet_public_az1
-  subnet_public_az2 = var.subnet_public_az2
-  subnet_service_az1 = var.subnet_service_az1
-  subnet_service_az2 = var.subnet_service_az2
-  subnet_db_az1  = var.subnet_db_az1
-  subnet_db_az2  = var.subnet_db_az2
-
-
-  subnet_public_list = [subnet_public_az1.id, subnet_public_az2.id]
-  subnet_service_list = [subnet_service_az1.id, subnet_service_az2.id]  # NAT 개별 적용
-  subnet_db_list      = [subnet_db_az1.id, subnet_db_az2.id]  # 내부 통신 전용
-
- 
   ##SecurityGroup
   #sg_allow_comm_list = concat(var.ext_sg_allow_list, ["${module.vpc.nat_ip}/32", var.vpc_ip_range])
 
