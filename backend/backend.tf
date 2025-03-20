@@ -1,13 +1,3 @@
-terraform {
-  backend "s3" {
-    bucket         = "zero9905-terraformstate"
-    key            = "terraform.tfstate"
-    region         = "us-east-2"
-    dynamodb_table = "zero9905-terraformstate"
-    encrypt        = true
-    role_arn       = aws_iam_role.terraform_backend_role.arn # ✅ IAM Role 사용
-  }
-}
 
 resource "aws_s3_bucket" "terraform_state" { 
   bucket = "zero9905-terraformstate"
@@ -32,10 +22,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "default" {
 
 resource "aws_s3_bucket_public_access_block" "public_access" {
   bucket = aws_s3_bucket.terraform_state.id
-  block_public_acls       = false
+  block_public_acls       = true
   block_public_policy     = true
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_policy" "terraform_state_policy" {
