@@ -23,3 +23,62 @@ resource "aws_iam_instance_profile" "ec2-iam-role-profile" {
   name = "aws-iam-${var.stage}-${var.servicename}-ec2-role-profile"
   role = aws_iam_role.ec2-iam-role.name
 }
+
+resource "aws_iam_role" "terraform_backend_role" {
+  name = "TerraformS3Role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${var.aws_account_id}:root"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_policy" "terraform_backend_policy" {
+  name        = "TerraformBackendPolicy"
+  description = "Permissions for Terraform backend"
+  
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::zero9905-terraformstate",
+        "arn:aws:s3:::zero9905-terraformstate/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:GetItem",
+        "dynamodb:DeleteItem"
+      ],
+      "Resource": "arn:aws:dynamodb:::table/zero9905-terraformstate"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "terraform_backend_attach" {
+  role       = aws_iam_role.terraform_backend_role.name
+  policy_arn = aws_iam_policy.terraform_backend_policy.arn
+}
