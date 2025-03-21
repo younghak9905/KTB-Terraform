@@ -107,3 +107,7 @@ variable "container_port" {
   type        = number
   default = 80
 }
+variable "sg_list" {
+  description = "List of security group IDs"
+  type        = list(string)
+}

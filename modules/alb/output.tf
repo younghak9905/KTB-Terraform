@@ -9,7 +9,7 @@
 #}
 
 output "target_group_arn" {
-  value = aws_lb_target_group.target_group.arn
+  value = aws_lb_target_group.target-group.arn
 }
 
 output "listener_arn" {

@@ -83,7 +83,7 @@ resource "aws_security_group" "sg_ecs" {
     from_port       = 80  # 컨테이너 포트 (예: Nginx, Spring Boot 등)
     to_port         = 80
     protocol        = "TCP"
-    security_groups = [aws_security_group.sg_alb.id] # ALB에서 오는 트래픽만 허용
+    security_groups = var.sg_list # ALB에서 오는 트래픽만 허용
   }
 
   egress {
