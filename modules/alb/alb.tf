@@ -1,5 +1,5 @@
 resource "aws_lb" "alb" {
-  name               = "aws-alb-${var.stage}-${var.servicename}"
+  //name               = "aws_alb_${var.stage}-${var.servicename}"
   internal           = var.internal
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg-alb.id]
@@ -53,7 +53,7 @@ resource "aws_lb_listener" "lb-listener-80" {
 
 
 resource "aws_lb_target_group" "target-group" {
-  name        = "aws_alb_tg-${var.stage}-${var.servicename}"
+  //name        = "aws_alb_tg_${var.stage}-${var.servicename}"
   port        = var.port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -90,7 +90,7 @@ resource "aws_lb_target_group" "target-group" {
 
 # ALB 보안 그룹
 resource "aws_security_group" "sg-alb" {
-  name   = "aws-sg-${var.stage}-${var.servicename}-alb"
+ // name   = "aws-sg-${var.stage}-${var.servicename}-alb"
   vpc_id = var.vpc_id
 
   ingress {

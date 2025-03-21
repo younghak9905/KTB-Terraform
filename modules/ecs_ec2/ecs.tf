@@ -78,7 +78,7 @@ resource "aws_ecs_service" "ecs_service" {
 }
 
 resource "aws_security_group" "sg_ecs" {
-  name        = "sg-${var.stage}-${var.servicename}-ecs"
+ // name        = "sg_${var.stage}_${var.servicename}_ecs"
   description = "Security group for ECS EC2 instances"
   vpc_id      = var.vpc_id
 

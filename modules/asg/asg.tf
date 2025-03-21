@@ -1,5 +1,5 @@
 resource "aws_autoscaling_group" "this" {
-  name                      = "aws_asg-${var.stage}-${var.servicename}"
+  name                      = "aws_asg_${var.stage}-${var.servicename}"
   desired_capacity          = var.desired_capacity
   min_size                  = var.min_size
   max_size                  = var.max_size
