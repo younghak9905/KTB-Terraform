@@ -140,30 +140,30 @@ jobs:
   #         cd terraform_stage
   #         terraform apply -var="import_existing=true" -parallelism=10 -auto-approve tfplan
 
-  # backend_setup:
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     CURRENT_ENV: stage
-  #   needs: terraform
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v2
+  backend_setup:
+    runs-on: ubuntu-latest
+    env:
+      CURRENT_ENV: stage
+    needs: terraform
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v1
-  #       with:
-  #         terraform_version: '1.8.0'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.8.0'
 
-  #     - name: Terraform Backend Init
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.TF_DEV_ZERO9905_AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_DEV_ZERO9905_AWS_SECRET_ACCESS_KEY }}
-  #       run: |
-  #         cd terraform_stage; terraform init -reconfigure\
-  #           -backend-config="region=us-east-2" \
-  #           -backend-config="bucket=zero9905-terraformstate" \
-  #           -backend-config="key=${{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
-  #           -backend-config="dynamodb_table=zero9905-terraformstate"
+      - name: Terraform Backend Init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_DEV_ZERO9905_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_DEV_ZERO9905_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          cd terraform_stage; terraform init -reconfigure\
+            -backend-config="region=us-east-2" \
+            -backend-config="bucket=zero9905-terraformstate" \
+            -backend-config="key=${{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
+            -backend-config="dynamodb_table=zero9905-terraformstate"
 
   backend_destroy:
     runs-on: ubuntu-latest
