@@ -130,7 +130,7 @@ module "alb" {
   tags        = var.tags
 
   # ALB 설정
-  internal            = falseS
+  internal            = false
   aws_s3_lb_logs_name = var.aws_s3_lb_logs_name
   idle_timeout        = 60
   # domain, hostzone_id 등 추가 가능
