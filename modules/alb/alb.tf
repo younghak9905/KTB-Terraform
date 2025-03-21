@@ -9,7 +9,7 @@ resource "aws_lb" "alb" {
   idle_timeout               = var.idle_timeout
 
   access_logs {
-    bucket  = var.aws_s3_lb_logs_name
+    bucket  = aws_s3_bucket.alb_logs.id 
     prefix  = "aws-alb-${var.stage}-${var.servicename}"
     enabled = true
   }
@@ -121,6 +121,35 @@ resource "aws_security_group" "sg-alb" {
     { Name = "aws-sg-${var.stage}-${var.servicename}-alb" },
     var.tags
   )
+}
+
+resource "aws_s3_bucket" "alb_logs" {
+  bucket = "zero9905-alb-logs"
+  acl    = "private"
+
+  tags = {
+    Name        = "ALB Logs Bucket"
+    Environment = var.stage
+  }
+}
+
+resource "aws_s3_bucket_policy" "alb_logs_policy" {
+  bucket = aws_s3_bucket.alb_logs.id
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "elasticloadbalancing.amazonaws.com"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::zero9905-alb-logs/AWSLogs/*"
+    }
+  ]
+}
+POLICY
 }
 
 #resource "aws_route53_record" "alb-record" {
