@@ -111,3 +111,22 @@ variable "sg_list" {
   description = "List of security group IDs"
   type        = list(string)
 }
+
+
+variable "import_existing" {
+  description = "If true, use existing IAM resources instead of creating new ones"
+  type        = bool
+  default     = false
+}
+
+variable "ecs_instance_role_name" {
+  description = "Name of the ECS instance role"
+  type        = string
+  default     = "ecsInstanceRole"
+}
+
+variable "ecs_instance_profile_name" {
+  description = "Name of the ECS instance profile"
+  type        = string
+  default     = "ecsInstanceProfile"
+}

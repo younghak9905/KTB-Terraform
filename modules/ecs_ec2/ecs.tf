@@ -2,30 +2,6 @@ resource "aws_ecs_cluster" "this" {
   name = "awse_ecs_${var.stage}_${var.servicename}"
 }
 
-data "aws_iam_policy_document" "ecs_instance_assume_role" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-  }
-}
-
-resource "aws_iam_role" "ecs_instance_role" {
-  name               = var.ecs_instance_role_name
-  assume_role_policy = data.aws_iam_policy_document.ecs_instance_assume_role.json
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_instance_role_attachment" {
-  role       = aws_iam_role.ecs_instance_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-}
-
-resource "aws_iam_instance_profile" "ecs_instance_profile" {
-  name = var.ecs_instance_profile_name
-  role = aws_iam_role.ecs_instance_role.name
-}
 
 resource "aws_launch_template" "ecs_launch_template" {
   name_prefix   = var.launch_template_name_prefix

@@ -120,11 +120,11 @@ jobs:
             -backend-config="key=${{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
             -backend-config="dynamodb_table=zero9905-terraformstate" \
             -lock-timeout=300s
-          terraform plan -out=tfplan -input=false -parallelism=10 || \
+          terraform plan -out=tfplan -input=false -parallelism=10 -var="import_existing=true" || \
           (echo "Terraform state lock detected! Deleting lock..." && \
           aws dynamodb delete-item --table-name zero9905-terraformstate \
             --key '{"LockID": {"S": "zero9905-terraformstate/stage/terraform/terraform.tfstate"}}' && \
-          terraform plan -out=tfplan -input=false)
+          terraform plan -out=tfplan -input=false -var="import_existing=true")
             
       - name: Terraform Import IAM Resources
         run: |
@@ -138,7 +138,7 @@ jobs:
 
         run: |
           cd terraform_stage
-          terraform apply -parallelism=10 -auto-approve tfplan
+          terraform apply -var="import_existing=true" -parallelism=10 -auto-approve tfplan
 
   backend_setup:
     runs-on: ubuntu-latest
