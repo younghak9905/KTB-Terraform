@@ -17,3 +17,4 @@ output "launch_template_version" {
   description = "The default version of the launch template"
   value       = aws_launch_template.ecs_launch_template.latest_version
 }
+

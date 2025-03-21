@@ -89,3 +89,21 @@ variable "alb_listener_arn" {
   description = "ARN of the ALB Listener from the ALB module"
   type        = string
 }
+
+variable "container_image" {
+  description = "Container image"
+  type        = string
+  default = "nginx:latest"
+}
+
+variable "container_name" {
+  description = "Container name"
+  type        = string
+  default = "nginx"
+}
+
+variable "container_port" {
+  description = "Container port"
+  type        = number
+  default = 80
+}

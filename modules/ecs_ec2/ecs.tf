@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "this" {
-  name = "awse-ecs-${var.stage}-${var.servicename}"
+  name = "awse_ecs_${var.stage}_${var.servicename}"
 }
 
 data "aws_iam_policy_document" "ecs_instance_assume_role" {
@@ -38,13 +38,15 @@ resource "aws_launch_template" "ecs_launch_template" {
   }
 
   user_data = base64encode(<<-EOF
-    #!/bin/bash
-    yum update -y
-    yum install -y httpd
-    echo "Hello, World from Auto Scaling!" > /var/www/html/index.html
-    systemctl start httpd
-    systemctl enable httpd
-  EOF
+  #!/bin/bash
+  echo "ECS_CLUSTER=${aws_ecs_cluster.this.name}" >> /etc/ecs/ecs.config
+  yum update -y
+  amazon-linux-extras enable docker
+  yum install -y docker
+  service docker start
+  systemctl enable docker
+  start ecs
+EOF
   )
 
 
@@ -58,27 +60,22 @@ resource "aws_launch_template" "ecs_launch_template" {
 
 
 resource "aws_ecs_service" "ecs_service" {
-  name            = "ecs-service-${var.stage}-${var.servicename}"
+  name            = "ecs_service_${var.stage}_${var.servicename}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.ecs_task.arn
   desired_count   = 2
   launch_type     = "EC2"  # Fargate 대신 EC2 사용
 
-  network_configuration {
-    subnets         = var.subnet_ids
-    security_groups = [aws_security_group.sg_ecs.id]
-  }
-
-  load_balancer {
-    target_group_arn = var.alb_listener_arn
-    container_name   = "nginx-container"
-    container_port   = 80
+   load_balancer {
+    target_group_arn = var.alb_target_group_arn  # ✅ Target Group ARN을 참조하도록 변경
+    container_name   = var.container_name        # ✅ 변수로 관리하여 유연성 확보
+    container_port   = var.container_port        # ✅ 변수로 포트 관리
   }
 
 }
 
 resource "aws_security_group" "sg_ecs" {
- // name        = "sg_${var.stage}_${var.servicename}_ecs"
+  name        = "sg_${var.stage}_${var.servicename}_ecs"
   description = "Security group for ECS EC2 instances"
   vpc_id      = var.vpc_id
 
