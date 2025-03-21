@@ -10,6 +10,15 @@ terraform {
   }
 }
 
+module "sg_detach" {
+  source = "../modules/detach"
+  security_group_ids     = [
+    aws_security_group.sg-ec2.id,
+    module.alb.sg_alb.id
+    ]
+  
+}
+
 module "vpc" {
   source              = "../modules/vpc"
   stage               = var.stage
