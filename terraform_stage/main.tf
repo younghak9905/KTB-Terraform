@@ -10,15 +10,6 @@ terraform {
   }
 }
 
-module "sg_detach" {
-  source = "../modules/detach"
-  security_group_ids     = [
-    aws_security_group.sg-ec2.id,
-    module.alb.sg_alb_id
-    ]
-  
-}
-
 module "vpc" {
   source              = "../modules/vpc"
   stage               = var.stage
@@ -109,6 +100,11 @@ resource "aws_security_group" "sg-ec2" {
   tags = merge(tomap({
          Name = "aws-sg-${var.stage}-${var.servicename}-ec2"}), 
         var.tags)
+
+        lifecycle {
+    create_before_destroy = true
+    ignore_changes = [ingress]
+  }
 }
 
 module "alb" {
@@ -136,6 +132,9 @@ module "alb" {
 
   # 보안 그룹 설정
   sg_allow_comm_list = ["0.0.0.0/0"]  # 필요 시 수정
+
+  
+  
  
 }
 

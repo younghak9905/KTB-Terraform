@@ -115,6 +115,11 @@ resource "aws_security_group" "sg_alb" {
     { Name = "aws-sg-${var.stage}-${var.servicename}-alb" },
     var.tags
   )
+
+    lifecycle {
+    create_before_destroy = true
+    ignore_changes = [ingress]
+  }
 }
 
 
