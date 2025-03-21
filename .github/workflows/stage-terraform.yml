@@ -111,7 +111,7 @@ jobs:
         run: |
           cd terraform_stage
           terraform init -reconfigure
-          terraform plan -out=tfplan -input=false
+          terraform plan -input=false
 
       - name: Terraform Import IAM Resources
         run: |
@@ -122,7 +122,7 @@ jobs:
       - name: Terraform Apply
         run: |
           cd terraform_stage
-          terraform apply -parallelism=10 -auto-approve tfplan
+          terraform apply -auto-approve 
 
   backend_setup:
     runs-on: ubuntu-latest
@@ -185,4 +185,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_DEV_ZERO9905_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_DEV_ZERO9905_AWS_SECRET_ACCESS_KEY }}
         run: |
-          cd terraform_stage; terraform destroy -parallelism=10 -auto-approve tfplan
+          cd terraform_stage; terraform destroy -auto-approve 
