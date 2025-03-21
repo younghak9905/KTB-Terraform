@@ -104,7 +104,11 @@ jobs:
           fi
 
       # 추가: 이미 존재하는 IAM 리소스를 Terraform state에 import
-      
+      - name: Terraform Import S3 Bucket (Fix for 'BucketAlreadyOwnedByYou')
+        run: |
+          cd terraform_stage
+          terraform import aws_s3_bucket.terraform_state zero9905-terraformstate || true
+
 
       - name: Terraform Plan
         id: plan
