@@ -126,11 +126,11 @@ module "alb" {
   stage       = var.stage
   servicename = var.servicename
   vpc_id      = module.vpc.vpc_id
-  subnet_ids  = [module.vpc.public_az1.id, module.vpc.public_az2.id]
+  subnet_ids  = [module.vpc.public_az1, module.vpc.public_az2]
   tags        = var.tags
 
   # ALB 설정
-  internal            = false
+  internal            = falseS
   aws_s3_lb_logs_name = var.aws_s3_lb_logs_name
   idle_timeout        = 60
   # domain, hostzone_id 등 추가 가능

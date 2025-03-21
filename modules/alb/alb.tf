@@ -53,7 +53,7 @@ resource "aws_lb_listener" "lb-listener-80" {
 
 
 resource "aws_lb_target_group" "target-group" {
-  name        = "aws-alb-tg-${var.stage}-${var.servicename}"
+  name        = "aws_alb_tg-${var.stage}-${var.servicename}"
   port        = var.port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id

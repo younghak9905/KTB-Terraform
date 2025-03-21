@@ -1,3 +1,4 @@
 *.pkg
 aws-mfa-script/
 .DS_Store
+error
