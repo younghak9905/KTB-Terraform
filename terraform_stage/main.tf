@@ -14,7 +14,7 @@ module "sg_detach" {
   source = "../modules/detach"
   security_group_ids     = [
     aws_security_group.sg-ec2.id,
-    module.alb.sg_alb.id
+    module.alb.sg_alb_id
     ]
   
 }
