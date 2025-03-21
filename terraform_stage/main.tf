@@ -101,7 +101,7 @@ resource "aws_security_group" "sg-ec2" {
          Name = "aws-sg-${var.stage}-${var.servicename}-ec2"}), 
         var.tags)
 }
-
+/*
 module "asg" {
   source                      = "../modules/asg"
   asg_name                    = "my-ecs-asg"
@@ -118,58 +118,56 @@ module "asg" {
   stage                       = var.stage    
   servicename                 = var.servicename  
 }
-
+*/
 module "alb" {
   source = "../modules/alb"
 
   # 공통 변수
-  stage         = var.stage
-  servicename   = var.servicename
-  vpc_id        = module.vpc.vpc_id
-  subnet_ids    = [module.vpc.public_az1.id, module.vpc.public_az2.id]
-  tags          = var.tags
+  stage       = var.stage
+  servicename = var.servicename
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = [module.vpc.public_az1.id, module.vpc.public_az2.id]
+  tags        = var.tags
 
   # ALB 설정
-  internal              = false
-  aws_s3_lb_logs_name   = var.aws_s3_lb_logs_name
-  idle_timeout          = 60
-  #domain               = var.domain
-  #hostzone_id          = var.az.id
+  internal            = false
+  aws_s3_lb_logs_name = var.aws_s3_lb_logs_name
+  idle_timeout        = 60
+  # domain, hostzone_id 등 추가 가능
 
   # Target Group 설정
   target_type           = "instance"
-  instance_ids          = module.ecs_ec2.instance_ids
   port                  = 80
   hc_path               = "/"
   hc_healthy_threshold  = 5
   hc_unhealthy_threshold = 2
 
   # 보안 그룹 설정
-  sg_allow_comm_list = ["0.0.0.0/0"] # 필요 시 수정
-}
-
-
-module "ecs_ec2" {
-  source                      = "../modules/ecs_ec2"
-  cluster_name                = "my-ecs-cluster"
-  ecs_ami_id                  = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
-  instance_type               = "t3.micro"
-  key_name                    = "my-key"
-  user_data                   = "#!/bin/bash\nyum update -y"
-  instance_name               = var.servicename
-  tags                        = { Environment = "stage", Project = "myproject",Type="ecs-ec2" }
-  vpc_id                      = module.vpc.vpc_id
-  region                      = var.region
-  subnet_ids                  = [var.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
-  stage                       = var.stage
-  servicename                 = var.servicename 
-
-  # ALB 관련 값 전달
-  alb_target_group_arn = module.alb.target_group_arn
-  alb_listener_arn     = module.alb.listener_arn
+  sg_allow_comm_list = ["0.0.0.0/0"]  # 필요 시 수정
  
 }
 
+/*
+module "ecs_ec2" {
+  source      = "../modules/ecs_ec2"
+  cluster_name  = "my-ecs-cluster"
+  ecs_ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  instance_type = "t3.micro"
+  key_name      = "my-key"
+  user_data     = "#!/bin/bash\nyum update -y"
+  instance_name = var.servicename
+  tags          = { Environment = "stage", Project = "myproject", Type = "ecs-ec2" }
+  vpc_id        = module.vpc.vpc_id
+  region        = var.region
+  subnet_ids    = [var.subnet_service_az1, var.subnet_service_az2]
+  stage         = var.stage
+  servicename   = var.servicename 
+
+  # ALB 관련 값 전달 (ALB 모듈의 출력값 사용)
+  alb_target_group_arn  = module.alb.target_group_arn
+  alb_listener_arn      = module.alb.listener_arn
+  
+}*/
 
 
 #RDS
