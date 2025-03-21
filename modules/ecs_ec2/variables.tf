@@ -118,15 +118,3 @@ variable "import_existing" {
   type        = bool
   default     = false
 }
-
-variable "ecs_instance_role_name" {
-  description = "Name of the ECS instance role"
-  type        = string
-  default     = "ecsInstanceRole"
-}
-
-variable "ecs_instance_profile_name" {
-  description = "Name of the ECS instance profile"
-  type        = string
-  default     = "ecsInstanceProfile"
-}
