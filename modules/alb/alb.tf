@@ -2,7 +2,7 @@ resource "aws_lb" "alb" {
   //name               = "aws_alb_${var.stage}-${var.servicename}"
   internal           = var.internal
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.sg-alb.id]
+  security_groups    = [aws_security_group.sg_alb.id]
   subnets            = var.subnet_ids
 
   enable_deletion_protection = true
@@ -83,7 +83,7 @@ resource "aws_lb_target_group" "target-group" {
 
 
 # ALB 보안 그룹
-resource "aws_security_group" "sg-alb" {
+resource "aws_security_group" "sg_alb" {
  // name   = "aws-sg-${var.stage}-${var.servicename}-alb"
   vpc_id = var.vpc_id
 

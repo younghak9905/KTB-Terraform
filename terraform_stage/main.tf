@@ -165,7 +165,7 @@ module "ecs_ec2" {
   # ALB 관련 값 전달 (ALB 모듈의 출력값 사용)
   alb_target_group_arn  = module.alb.target_group_arn
   alb_listener_arn      = module.alb.listener_arn
-  sg_list = [module.alb.sg-alb.id]
+  sg_list               = [module.alb.sg_alb_id]  # ✅ 수정: module.alb.sg_alb_id로 변경
 
   #컨테이너 관련 설정
   container_name = "my-container"

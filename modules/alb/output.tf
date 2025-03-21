@@ -15,3 +15,8 @@ output "target_group_arn" {
 output "listener_arn" {
   value = aws_lb_listener.lb-listener-80.arn
 }
+
+output "sg_alb_id" {
+  description = "ALB Security Group ID"
+  value       = aws_security_group.sg_alb.id
+}
