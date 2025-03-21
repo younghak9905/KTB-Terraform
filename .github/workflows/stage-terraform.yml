@@ -127,7 +127,10 @@ jobs:
           cd terraform_stage
           terraform import module.iam_service_role.aws_iam_role.ec2-iam-role aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role || true
           terraform import module.iam_service_role.aws_iam_instance_profile.ec2-iam-role-profile aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role-profile || true
-
+          terraform import module.ecs_ec2.aws_iam_role.ecs_instance_role ecsInstanceRole || true
+          terraform import module.ecs_ec2.aws_iam_role.ecs_task_role terraform_zero9905-ecs-task-role || true
+          terraform import module.ecs_ec2.aws_iam_role.ecs_task_execution_role terraform_zero9905-ecs-task-execution-role || true
+          terraform import module.ecs_ec2.aws_security_group.sg_ecs sg_stage_terraform_zero9905_ecs || true
       - name: Terraform Apply
 
         run: |
