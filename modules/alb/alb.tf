@@ -8,12 +8,6 @@ resource "aws_lb" "alb" {
   enable_deletion_protection = true
   idle_timeout               = var.idle_timeout
 
-  access_logs {
-    bucket  = aws_s3_bucket.alb_logs.id 
-    prefix  = "aws-alb-${var.stage}-${var.servicename}"
-    enabled = true
-  }
-
   tags = merge(
     { Name = "aws-alb-${var.stage}-${var.servicename}" },
     var.tags
@@ -123,34 +117,8 @@ resource "aws_security_group" "sg-alb" {
   )
 }
 
-resource "aws_s3_bucket" "alb_logs" {
-  bucket = "zero9905-alb-logs"
-  acl    = "private"
 
-  tags = {
-    Name        = "ALB Logs Bucket"
-    Environment = var.stage
-  }
-}
 
-resource "aws_s3_bucket_policy" "alb_logs_policy" {
-  bucket = aws_s3_bucket.alb_logs.id
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "elasticloadbalancing.amazonaws.com"
-      },
-      "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::zero9905-alb-logs/AWSLogs/*"
-    }
-  ]
-}
-POLICY
-}
 
 #resource "aws_route53_record" "alb-record" {
 #  count = var.domain != "" ? 1 : 0
