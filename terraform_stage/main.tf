@@ -106,7 +106,7 @@ resource "aws_security_group" "sg-ec2" {
     ignore_changes = [ingress]
   }
 }
-
+/*
 module "alb" {
   source = "../modules/alb"
 
@@ -209,3 +209,4 @@ module "ecs_ec2" {
 #   kms_key_id = var.rds_kms_arn
 #   depends_on = [module.vpc]
 # }
+*/
