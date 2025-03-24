@@ -106,7 +106,7 @@ resource "aws_security_group" "sg-ec2" {
     ignore_changes = [ingress]
   }
 }
-/*
+
 module "alb" {
   source = "../modules/alb"
 
@@ -133,11 +133,8 @@ module "alb" {
   # 보안 그룹 설정
   sg_allow_comm_list = ["0.0.0.0/0"]  # 필요 시 수정
 
-  
-  
- 
 }
-
+/*
 module "asg" {
   source                      = "../modules/asg"
   asg_name                    = "my_ecs_asg"
