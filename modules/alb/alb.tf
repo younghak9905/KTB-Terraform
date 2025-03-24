@@ -56,14 +56,9 @@ resource "aws_lb_listener_rule" "ecs_alb_listener_rule" {
   priority     = 100
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group[0].arn
+    # 리소스 이름을 "target-group"으로 맞추고 인덱스를 추가합니다.
+    target_group_arn = aws_lb_target_group.target-group[0].arn
   }
-
-  # condition {
-  #   host_header {
-  #     values = [var.domain_name]
-  #   }
-  # }G
 
   condition {
     path_pattern {
