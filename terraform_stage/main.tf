@@ -134,7 +134,7 @@ module "alb" {
   sg_allow_comm_list = ["0.0.0.0/0"]  # 필요 시 수정
 
 }
-/*
+
 module "asg" {
   source                      = "../modules/asg"
   asg_name                    = "my_ecs_asg"
