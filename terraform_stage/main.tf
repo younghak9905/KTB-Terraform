@@ -138,7 +138,7 @@ module "alb" {
 
 
 
-module "ecs_ec2" {
+module "ecs" {
   source = "./modules/ecs"
 
   cluster_name                = "terraform-zero9905-ecs-cluster"
@@ -155,7 +155,7 @@ module "ecs_ec2" {
   # ECS Task 변수
   task_family                 = "my-task-family"
   task_network_mode           = "bridge"
-  container_definitions       = file("container_definitions.json")
+  container_definitions       = file("./modules/container_definitions.json")
   task_execution_role_arn     = var.task_execution_role_arn   # 미리 생성한 역할 ARN 또는 빈 문자열
   task_role_arn               = var.task_role_arn             # 미리 생성한 역할 ARN 또는 빈 문자열
   task_cpu                    = "256"
@@ -164,7 +164,7 @@ module "ecs_ec2" {
   service_desired_count       = 1
 
   tags = {
-    Environment = "production"
+    Environment = "stage"
     Project     = "ecs-project"
   }
 }
