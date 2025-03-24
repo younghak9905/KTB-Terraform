@@ -70,7 +70,7 @@ resource "aws_security_group" "sg-ec2" {
   count = var.create_ec2 ? 1 : 0
   name   = "aws-sg-${var.stage}-${var.servicename}-ec2"
   vpc_id = module.vpc.vpc_id
-
+ 
   ingress {
     from_port   = 443
     to_port     = 443

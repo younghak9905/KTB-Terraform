@@ -158,7 +158,6 @@ variable "create_ec2" {
 
 variable "create_ecs" {
   type = bool
-  default = false
-  
+  default = true
 }
 
