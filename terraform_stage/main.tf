@@ -145,7 +145,7 @@ module "ecs" {
   ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
   security_groups = var.create_ecs ? [aws_security_group.sg_ecs[0].id] : []
-  subnet_ids    = [var.subnet_service_az1, var.subnet_service_az2]
+  subnet_ids    = [module.vpc.service_az1, module.vpc.service_az2]
   associate_public_ip_address = true
   desired_capacity            = 2
   min_size                    = 1

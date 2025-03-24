@@ -4,7 +4,7 @@ resource "aws_ecs_cluster" "this" {
 
 
 resource "aws_launch_template" "ecs_instance_lt" {
-  name_prefix   = "${var.cluster_name}-"
+  name_prefix   = "${var.cluster_name}-cluster"
   image_id      = var.ami_id
   instance_type = var.instance_type
 
