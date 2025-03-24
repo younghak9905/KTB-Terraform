@@ -177,8 +177,6 @@ module "ecs_ec2" {
   container_port = 80
   container_image = "nginx:latest"
 
-  #iam
-  import_existing = var.import_existing
 
 
 }

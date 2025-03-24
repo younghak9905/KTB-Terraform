@@ -113,8 +113,3 @@ variable "sg_list" {
 }
 
 
-variable "import_existing" {
-  description = "If true, use existing IAM resources instead of creating new ones"
-  type        = bool
-  default     = false
-}

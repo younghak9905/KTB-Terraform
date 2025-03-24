@@ -134,7 +134,7 @@ jobs:
 
         run: |
           cd terraform_stage
-          terraform apply -var="import_existing=true" -parallelism=10 -auto-approve tfplan
+          terraform apply -parallelism=10 -auto-approve tfplan
 
   backend_setup:
     runs-on: ubuntu-latest

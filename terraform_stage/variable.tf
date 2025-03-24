@@ -151,8 +151,3 @@ variable "hostzone_id" {
   default = ""
 }
 
-variable "import_existing" {
-  description = "If true, use existing resources instead of creating new ones"
-  type        = bool
-  default     = false
-}
