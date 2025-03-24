@@ -18,9 +18,33 @@ resource "aws_launch_template" "ecs_instance_lt" {
   EOF
   )
 
-  vpc_security_group_ids = var.security_groups
+  vpc_security_group_ids = aws_security_group.sg_ecs[0].id
 
   # 필요 시 추가 설정 (예: key_name, block_device_mappings 등) 추가
+}
+
+
+resource "aws_security_group" "sg_ecs" {
+  count  = var.create_ecs ? 1 : 0
+  name        = "sg_${var.cluster_name}_ecs"
+  description = "Security group for ECS EC2 instances"
+  vpc_id        = var.vpc_id
+
+  ingress {
+    from_port       = 80  # 컨테이너 포트 (예: Nginx, Spring Boot 등)
+    to_port         = 80
+    protocol        = "TCP"
+    security_groups = [module.alb.sg_alb_id] # ALB에서 오는 트래픽만 허용
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # 인터넷 접근 허용 (필요시 변경)
+  }
+
+  tags = merge(var.tags, { "Name" = "sg-${var.cluster_name}-ecs" })
 }
 
 resource "aws_autoscaling_group" "ecs_instances" {

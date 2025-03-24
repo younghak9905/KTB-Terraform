@@ -128,3 +128,15 @@ variable "container_port" {
   type        = number
   default = 80
 }
+
+variable "create_ecs" {
+  type    = bool
+  default = true
+  
+}
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+  
+}

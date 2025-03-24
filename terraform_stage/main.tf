@@ -140,7 +140,7 @@ module "alb" {
 
 module "ecs" {
   source = "../modules/ecs"
-
+  vpc_id = module.vpc.vpc_id
   cluster_name                = "terraform-zero9905-ecs-cluster"
   ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
@@ -169,29 +169,6 @@ module "ecs" {
   }
 }
 
-
-resource "aws_security_group" "sg_ecs" {
-  count  = var.create_ecs ? 1 : 0
-  name        = "sg_${var.stage}_${var.servicename}_ecs"
-  description = "Security group for ECS EC2 instances"
-  vpc_id        = module.vpc.vpc_id
-
-  ingress {
-    from_port       = 80  # 컨테이너 포트 (예: Nginx, Spring Boot 등)
-    to_port         = 80
-    protocol        = "TCP"
-    security_groups = [module.alb.sg_alb_id] # ALB에서 오는 트래픽만 허용
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] # 인터넷 접근 허용 (필요시 변경)
-  }
-
-  tags = merge(var.tags, { "Name" = "sg-${var.stage}-${var.servicename}-ecs" })
-}
 
 /*
 module "asg" {
