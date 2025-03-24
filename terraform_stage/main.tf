@@ -144,7 +144,7 @@ module "ecs" {
   cluster_name                = "terraform-zero9905-ecs-cluster"
   ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
-  security_groups             = [sg_ecs.id]
+  security_groups             = [aws_security_group.sg_ecs[0].id]
   subnet_ids    = [var.subnet_service_az1, var.subnet_service_az2]
   associate_public_ip_address = true
   desired_capacity            = 2
@@ -155,7 +155,7 @@ module "ecs" {
   # ECS Task 변수
   task_family                 = "my-task-family"
   task_network_mode           = "bridge"
-  container_definitions       = file("./modules/container_definitions.json")
+  container_definitions       = file("../modules/container_definitions.json")
   task_cpu                    = "256"
   task_memory                 = "512"
   service_name                = "my-ecs-service"
@@ -174,7 +174,7 @@ resource "aws_security_group" "sg_ecs" {
   count  = var.create_ecs ? 1 : 0
   name        = "sg_${var.stage}_${var.servicename}_ecs"
   description = "Security group for ECS EC2 instances"
-  vpc_id      = vpc_id
+  vpc_id        = module.vpc.vpc_id
 
   ingress {
     from_port       = 80  # 컨테이너 포트 (예: Nginx, Spring Boot 등)
