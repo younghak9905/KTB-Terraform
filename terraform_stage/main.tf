@@ -155,7 +155,7 @@ module "ecs" {
   # ECS Task 변수
   task_family                 = "my-task-family"
   task_network_mode           = "bridge"
-  container_definitions       = file("../modules/container_definitions.json")
+  container_definitions       = file("./container_definitions.json")
   task_cpu                    = "256"
   task_memory                 = "512"
   service_name                = "my-ecs-service"
