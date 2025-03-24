@@ -90,3 +90,9 @@ variable "availability_zone" {
   type    = string
   default = ""
 }
+
+variable "create_alb" {
+  type    = bool
+  default = true
+  
+}

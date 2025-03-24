@@ -151,3 +151,8 @@ variable "hostzone_id" {
   default = ""
 }
 
+variable "create_ec2" {
+  type = bool
+  default = true
+}
+

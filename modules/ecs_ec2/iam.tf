@@ -9,7 +9,10 @@ data "aws_iam_policy_document" "ecs_instance_assume_role" {
   }
 }
 
+
+
 resource "aws_iam_role" "ecs_instance_role" {
+  count             = var.create_ecs_instance_role ? 1 : 0
   name               = var.ecs_instance_role_name
   assume_role_policy = data.aws_iam_policy_document.ecs_instance_assume_role.json
 }
@@ -20,6 +23,7 @@ resource "aws_iam_role_policy_attachment" "ecs_instance_role_attachment" {
 }
 
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
+  count             = var.create_ecs_instance_role ? 1 : 0
   name = var.ecs_instance_profile_name
   role = aws_iam_role.ecs_instance_role.name
 }

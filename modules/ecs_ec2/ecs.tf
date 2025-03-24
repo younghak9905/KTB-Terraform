@@ -50,7 +50,9 @@ resource "aws_ecs_service" "ecs_service" {
 
 }
 
+
 resource "aws_security_group" "sg_ecs" {
+  count  = var.create_ecs_sg ? 1 : 0
   name        = "sg_${var.stage}_${var.servicename}_ecs"
   description = "Security group for ECS EC2 instances"
   vpc_id      = var.vpc_id

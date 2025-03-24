@@ -1,5 +1,6 @@
 resource "aws_lb" "alb" {
   //name               = "aws_alb_${var.stage}-${var.servicename}"
+  count = var.create_alb ? 1 : 0
   internal           = var.internal
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg_alb.id]
@@ -16,6 +17,7 @@ resource "aws_lb" "alb" {
 
 # 🔵 HTTP 리스너 (80번 포트)
 resource "aws_lb_listener" "lb-listener-80" {
+  count = var.create_alb ? 1 : 0
   load_balancer_arn = aws_lb.alb.arn
   port              = "80"
   protocol          = "HTTP"
@@ -85,6 +87,7 @@ resource "aws_lb_target_group" "target-group" {
 # ALB 보안 그룹
 resource "aws_security_group" "sg_alb" {
  // name   = "aws-sg-${var.stage}-${var.servicename}-alb"
+  count = var.create_alb ? 1 : 0
   vpc_id = var.vpc_id
 
   ingress {
