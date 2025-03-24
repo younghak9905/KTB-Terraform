@@ -80,8 +80,8 @@ resource "aws_lb_target_group" "target-group" {
     healthy_threshold   = var.hc_healthy_threshold
     unhealthy_threshold = var.hc_unhealthy_threshold
     matcher             = "200,301,302"
-    interval            = 15
-    timeout             = 3
+    interval            = 30    # 헬스 체크 간격을 30초로 늘림
+    timeout               = 10    # 타임아웃을 10초로 늘림
 
   }
 

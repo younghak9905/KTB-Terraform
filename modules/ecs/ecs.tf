@@ -18,7 +18,7 @@ resource "aws_launch_template" "ecs_instance_lt" {
   EOF
   )
 
-  vpc_security_group_ids = aws_security_group.sg_ecs[0].id
+  vpc_security_group_ids = [aws_security_group.sg_ecs[0].id]
 
   # 필요 시 추가 설정 (예: key_name, block_device_mappings 등) 추가
 }
