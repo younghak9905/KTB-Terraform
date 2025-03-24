@@ -47,8 +47,8 @@ resource "aws_ecs_task_definition" "task" {
   network_mode             = var.task_network_mode  # 예: "bridge" 또는 "awsvpc"
   container_definitions    = var.container_definitions
   requires_compatibilities = ["EC2"]
-  execution_role_arn       = var.task_execution_role_arn
-  task_role_arn            = var.task_role_arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
   cpu                      = var.task_cpu
   memory                   = var.task_memory
 

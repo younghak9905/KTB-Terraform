@@ -139,10 +139,10 @@ module "alb" {
 
 
 module "ecs" {
-  source = "./modules/ecs"
+  source = "../modules/ecs"
 
   cluster_name                = "terraform-zero9905-ecs-cluster"
-  ecs_ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
   security_groups             = [sg_ecs.id]
   subnet_ids    = [var.subnet_service_az1, var.subnet_service_az2]
@@ -156,12 +156,12 @@ module "ecs" {
   task_family                 = "my-task-family"
   task_network_mode           = "bridge"
   container_definitions       = file("./modules/container_definitions.json")
-  task_execution_role_arn     = var.task_execution_role_arn   # 미리 생성한 역할 ARN 또는 빈 문자열
-  task_role_arn               = var.task_role_arn             # 미리 생성한 역할 ARN 또는 빈 문자열
   task_cpu                    = "256"
   task_memory                 = "512"
   service_name                = "my-ecs-service"
   service_desired_count       = 1
+
+  alb_target_group_arn  = module.alb.target_group_arn
 
   tags = {
     Environment = "stage"
