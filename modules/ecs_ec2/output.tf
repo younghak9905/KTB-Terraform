@@ -18,3 +18,7 @@ output "launch_template_version" {
   value       = aws_launch_template.ecs_launch_template.latest_version
 }
 
+output "create_ecs_sg" {
+  description = "Whether to create a security group for ECS container instances"
+  value       = var.create_ecs
+}

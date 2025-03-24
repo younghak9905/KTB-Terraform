@@ -67,9 +67,10 @@ EOF
 }*/
 
 resource "aws_security_group" "sg-ec2" {
+  count = var.create_ec2 ? 1 : 0
   name   = "aws-sg-${var.stage}-${var.servicename}-ec2"
   vpc_id = module.vpc.vpc_id
-
+ 
   ingress {
     from_port   = 443
     to_port     = 443
@@ -134,6 +135,41 @@ module "alb" {
   sg_allow_comm_list = ["0.0.0.0/0"]  # 필요 시 수정
 
 }
+
+
+
+module "ecs" {
+  source = "../modules/ecs"
+  vpc_id = module.vpc.vpc_id
+  cluster_name                = "terraform-zero9905-ecs-cluster"
+  ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  instance_type = "t3.micro"
+  subnet_ids    = [module.vpc.service_az1, module.vpc.service_az2]
+  associate_public_ip_address = true
+  desired_capacity            = 2
+  min_size                    = 1
+  max_size                    = 3
+  instance_name               = "terrafom-zero9905-ecs-instance"
+  sg_alb_id = module.alb.sg_alb_id
+
+  # ECS Task 변수
+  task_family                 = "my-task-family"
+  task_network_mode           = "bridge"
+  container_definitions       = file("./container_definitions.json")
+  task_cpu                    = "256"
+  task_memory                 = "512"
+  service_name                = "my-ecs-service"
+  service_desired_count       = 1
+
+  alb_target_group_arn  = module.alb.target_group_arn
+
+  tags = {
+    Environment = "stage"
+    Project     = "ecs-project"
+  }
+}
+
+
 /*
 module "asg" {
   source                      = "../modules/asg"
@@ -154,6 +190,7 @@ module "asg" {
 
 module "ecs_ec2" {
   source      = "../modules/ecs_ec2"
+  prefix_name = "terraform-zero9905-ecs"
   cluster_name  = "my-ecs-cluster"
   ecs_ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
@@ -181,7 +218,7 @@ module "ecs_ec2" {
 
 }
 
-
+*/
 #RDS
 # module "rds" {
 #   #default engin aurora-mysql8.0
@@ -204,4 +241,3 @@ module "ecs_ec2" {
 #   kms_key_id = var.rds_kms_arn
 #   depends_on = [module.vpc]
 # }
-*/

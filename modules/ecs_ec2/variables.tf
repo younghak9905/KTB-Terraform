@@ -113,3 +113,14 @@ variable "sg_list" {
 }
 
 
+variable "create_ecs" {
+  type    = bool
+  default = true
+}
+
+variable "create_ecs_instance_role" {
+  type    = bool
+  default = true
+
+}
+variable "prefix_name" { type = string }
