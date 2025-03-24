@@ -100,6 +100,85 @@ resource "aws_security_group" "sg-ec2" {
   tags = merge(tomap({
          Name = "aws-sg-${var.stage}-${var.servicename}-ec2"}), 
         var.tags)
+
+        lifecycle {
+    create_before_destroy = true
+    ignore_changes = [ingress]
+  }
+}
+
+module "alb" {
+  source = "../modules/alb"
+
+  # 공통 변수
+  stage       = var.stage
+  servicename = var.servicename
+  vpc_id      = module.vpc.vpc_id
+  subnet_ids  = [module.vpc.public_az1, module.vpc.public_az2]
+  tags        = var.tags
+
+  # ALB 설정
+  internal            = false
+  aws_s3_lb_logs_name = var.aws_s3_lb_logs_name
+  idle_timeout        = 60
+  # domain, hostzone_id 등 추가 가능
+
+  # Target Group 설정
+  target_type           = "instance"
+  port                  = 80
+  hc_path               = "/"
+  hc_healthy_threshold  = 5
+  hc_unhealthy_threshold = 2
+
+  # 보안 그룹 설정
+  sg_allow_comm_list = ["0.0.0.0/0"]  # 필요 시 수정
+
+}
+/*
+module "asg" {
+  source                      = "../modules/asg"
+  asg_name                    = "my_ecs_asg"
+  desired_capacity            = 2
+  min_size                    = 1
+  max_size                    = 3
+  launch_template_id          = module.ecs_ec2.launch_template_id
+  launch_template_version     = module.ecs_ec2.launch_template_version
+  subnet_ids                  = [var.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
+  health_check_type           = "EC2"
+  health_check_grace_period   = 300
+  instance_name               = var.servicename
+  tags                        = { Environment = "stage", Project = "myproject",Type="asg" }
+  stage                       = var.stage    
+  servicename                 = var.servicename  
+}
+
+module "ecs_ec2" {
+  source      = "../modules/ecs_ec2"
+  cluster_name  = "my-ecs-cluster"
+  ecs_ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  instance_type = "t3.micro"
+  key_name      = "my-key"
+  #user_data     = "#!/bin/bash\nyum update -y"
+  instance_name = var.servicename
+  tags          = { Environment = "stage", Project = "myproject", Type = "ecs-ec2" }
+  vpc_id        = module.vpc.vpc_id
+  region        = var.region
+  subnet_ids    = [var.subnet_service_az1, var.subnet_service_az2]
+  stage         = var.stage
+  servicename   = var.servicename 
+
+  # ALB 관련 값 전달 (ALB 모듈의 출력값 사용)
+  alb_target_group_arn  = module.alb.target_group_arn
+  alb_listener_arn      = module.alb.listener_arn
+  sg_list               = [module.alb.sg_alb_id]  # ✅ 수정: module.alb.sg_alb_id로 변경
+
+  #컨테이너 관련 설정
+  container_name = "my-container"
+  container_port = 80
+  container_image = "nginx:latest"
+
+
+
 }
 
 
@@ -125,3 +204,4 @@ resource "aws_security_group" "sg-ec2" {
 #   kms_key_id = var.rds_kms_arn
 #   depends_on = [module.vpc]
 # }
+*/

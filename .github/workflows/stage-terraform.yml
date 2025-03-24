@@ -4,7 +4,7 @@ name: 'Terraform'
 on:
   push:
     branches:
-      - 'stage'
+      - 'feat/*'
   pull_request:
     branches:
       - 'main'
@@ -104,20 +104,37 @@ jobs:
           fi
 
       # 추가: 이미 존재하는 IAM 리소스를 Terraform state에 import
-      
-
-      - name: Terraform Plan
-        run: cd terraform_stage; terraform init -reconfigure; terraform plan -input=false
-
-
-      - name: Terraform Import IAM Resources
+      - name: Terraform Import S3 Bucket (Fix for 'BucketAlreadyOwnedByYou')
         run: |
           cd terraform_stage
-          terraform import module.iam_service_role.aws_iam_role.ec2-iam-role aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role || true
-          terraform import module.iam_service_role.aws_iam_instance_profile.ec2-iam-role-profile aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role-profile || true
+          terraform import aws_s3_bucket.terraform_state zero9905-terraformstate || true
 
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          cd terraform_stage
+          terraform init -reconfigure \
+            -backend-config="region=us-east-2" \
+            -backend-config="bucket=zero9905-terraformstate" \
+            -backend-config="key=${{ env.CURRENT_ENV }}/terraform/terraform.tfstate" \
+            -backend-config="dynamodb_table=zero9905-terraformstate" \
+            -lock-timeout=300s
+          terraform plan -out=tfplan -input=false -parallelism=10 
+            
+     # - name: Terraform Import IAM Resources
+     #   run: |
+     #     cd terraform_stage
+     #     terraform import module.iam_service_role.aws_iam_role.ec2-iam-role aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role || true
+     #     terraform import module.iam_service_role.aws_iam_instance_profile.ec2-iam-role-profile aws-iam-${{ env.CURRENT_ENV }}-terraform_zero9905-ec2-role-profile || true
+     #     terraform import module.ecs_ec2.aws_iam_role.ecs_instance_role ecsInstanceRole || true
+     #     terraform import module.ecs_ec2.aws_iam_role.ecs_task_role terraform_zero9905-ecs-task-role || true
+     #     terraform import module.ecs_ec2.aws_iam_role.ecs_task_execution_role terraform_zero9905-ecs-task-execution-role || true
       - name: Terraform Apply
-        run: cd terraform_stage; terraform apply -auto-approve -input=false
+
+        run: |
+          cd terraform_stage
+          terraform apply -parallelism=10 -auto-approve tfplan
 
   backend_setup:
     runs-on: ubuntu-latest
@@ -180,4 +197,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_DEV_ZERO9905_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_DEV_ZERO9905_AWS_SECRET_ACCESS_KEY }}
         run: |
-          cd terraform_stage; terraform destroy -auto-approve
+          cd terraform_stage; terraform destroy -parallelism=10 -auto-approve tfplan

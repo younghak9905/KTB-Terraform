@@ -133,3 +133,21 @@ variable "associate_public_ip_address" {
 #  default = data.aws_kms_key.ebs_kms.arn
 #}
 
+
+
+##ALB
+variable "aws_s3_lb_logs_name" {
+  type = string
+  default = "zero9905-alb-logs"
+}
+
+variable "domain" {
+  type    = string
+  default = ""
+}
+
+variable "hostzone_id" {
+  type    = string
+  default = ""
+}
+
