@@ -3,31 +3,36 @@ resource "aws_ecs_cluster" "this" {
 }
 
 
-resource "aws_launch_configuration" "ecs_instance_lc" {
-  name_prefix                = "${var.cluster_name}-"
-  image_id                   = var.ami_id
-  instance_type              = var.instance_type
-  iam_instance_profile       = aws_iam_instance_profile.ecs_instance_profile.name
-  security_groups            = var.security_groups
-  associate_public_ip_address = var.associate_public_ip_address
+resource "aws_launch_template" "ecs_instance_lt" {
+  name_prefix   = "${var.cluster_name}-"
+  image_id      = var.ami_id
+  instance_type = var.instance_type
 
-  # EC2 인스턴스가 ECS 클러스터에 가입하도록 설정
-  user_data = <<-EOF
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ecs_instance_profile.name
+  }
+
+  user_data = base64encode(<<-EOF
     #!/bin/bash
     echo ECS_CLUSTER=${aws_ecs_cluster.this.name} >> /etc/ecs/ecs.config
   EOF
+  )
 
-  lifecycle {
-    create_before_destroy = true
-  }
+  vpc_security_group_ids = var.security_groups
+
+  # 필요 시 추가 설정 (예: key_name, block_device_mappings 등) 추가
 }
 
 resource "aws_autoscaling_group" "ecs_instances" {
-  launch_configuration = aws_launch_configuration.ecs_instance_lc.name
   vpc_zone_identifier  = var.subnet_ids
   desired_capacity     = var.desired_capacity
   min_size             = var.min_size
   max_size             = var.max_size
+
+  launch_template {
+    id      = aws_launch_template.ecs_instance_lt.id
+    version = "$Latest"
+  }
 
   tag {
     key                 = "Name"
@@ -39,7 +44,6 @@ resource "aws_autoscaling_group" "ecs_instances" {
     create_before_destroy = true
   }
 }
-
 
 #ecs task
 
