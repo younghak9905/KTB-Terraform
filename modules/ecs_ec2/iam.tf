@@ -60,26 +60,6 @@ resource "aws_cloudwatch_log_group" "ecs_logs" {
 }*/
 
 
-resource "aws_iam_role" "ecs_task_role" {
-  name               = "aws-role-${var.prefix_name}-ecs-task"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": ["ecs-tasks.amazonaws.com"]
-      },
-      "Effect": "Allow"
-    }
-  ]
-}
-EOF
-  tags = merge(var.tags, {
-    Name         = "aws-role-${var.prefix_name}-ecs-task"
-  })
-}
 
 resource "aws_iam_policy" "ecs_task_policy" {
   name   = "aws-iam-plc-ecs-task-${var.prefix_name}"
