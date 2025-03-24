@@ -204,4 +204,3 @@ module "ecs_ec2" {
 #   kms_key_id = var.rds_kms_arn
 #   depends_on = [module.vpc]
 # }
-*/
