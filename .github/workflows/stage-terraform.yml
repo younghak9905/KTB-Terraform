@@ -197,4 +197,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_DEV_ZERO9905_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_DEV_ZERO9905_AWS_SECRET_ACCESS_KEY }}
         run: |
-          cd terraform_stage; terraform destroy -parallelism=10 -auto-approve tfplan
+          cd terraform_stage; terraform destroy -parallelism=10 -auto-approve
