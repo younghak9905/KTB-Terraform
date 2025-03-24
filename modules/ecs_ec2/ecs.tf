@@ -10,7 +10,7 @@ resource "aws_launch_template" "ecs_launch_template" {
   key_name      = var.key_name
 
   iam_instance_profile {
-    name = aws_iam_instance_profile.ecs_instance_profile[0].name
+    name = aws_iam_instance_profile.ecs_instance_profile.name
   }
 
   user_data = base64encode(<<-EOF
