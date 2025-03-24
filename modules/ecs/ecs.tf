@@ -2,6 +2,7 @@ resource "aws_ecs_cluster" "this" {
   name = var.cluster_name
 }
 
+
 resource "aws_launch_configuration" "ecs_instance_lc" {
   name_prefix                = "${var.cluster_name}-"
   image_id                   = var.ami_id
@@ -67,7 +68,7 @@ resource "aws_ecs_service" "service" {
 
   # ALB 연동이 필요한 경우 load_balancer 블록을 추가하세요.
    load_balancer {
-     target_group_arn = var.alb_target_group_arn[0]
+     target_group_arn = var.alb_target_group_arn
      container_name   = var.container_name
      container_port   = var.container_port
    }

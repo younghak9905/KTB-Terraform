@@ -36,6 +36,8 @@ data "aws_iam_policy_document" "ecs_instance_assume_role" {
   }
 }
 
+
+
 resource "aws_iam_role" "ecs_task_role" {
     name = "${var.cluster_name}-ecs-task"
   assume_role_policy = <<EOF
@@ -54,6 +56,22 @@ resource "aws_iam_role" "ecs_task_role" {
 EOF
   tags = merge(var.tags, {
     Name         = "${var.cluster_name}-ecs-task"
+  })
+}
+
+
+resource "aws_iam_policy" "ecs_task_policy" {
+  name        = "${var.cluster_name}-ecs-task-policy"
+  description = "Policy for ECS Task logging and related permissions"
+  policy      = jsonencode({
+    Version   = "2012-10-17",
+    Statement = [
+      {
+        Action   = ["logs:CreateLogStream", "logs:PutLogEvents"],
+        Effect   = "Allow",
+        Resource = "*"
+      }
+    ]
   })
 }
 
