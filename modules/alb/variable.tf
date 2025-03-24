@@ -94,5 +94,6 @@ variable "availability_zone" {
 variable "create_alb" {
   type    = bool
   default = true
-  
+
 }
+

@@ -144,13 +144,13 @@ module "ecs" {
   cluster_name                = "terraform-zero9905-ecs-cluster"
   ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
-  security_groups = [aws_security_group.sg_ecs[0].id]
   subnet_ids    = [module.vpc.service_az1, module.vpc.service_az2]
   associate_public_ip_address = true
   desired_capacity            = 2
   min_size                    = 1
   max_size                    = 3
   instance_name               = "terrafom-zero9905-ecs-instance"
+  sg_alb_id = module.alb.sg_alb_id
 
   # ECS Task 변수
   task_family                 = "my-task-family"

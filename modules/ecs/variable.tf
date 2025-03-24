@@ -14,10 +14,10 @@ variable "ami_id" {
   type        = string
 }
 
-variable "security_groups" {
-  description = "ECS 인스턴스에 적용할 보안 그룹 ID 목록"
-  type        = list(string)
-}
+#variable "security_groups" {
+#  description = "ECS 인스턴스에 적용할 보안 그룹 ID 목록"
+#  type        = list(string)
+#}
 
 variable "subnet_ids" {
   description = "Auto Scaling Group에 사용할 서브넷 ID 목록"
@@ -139,4 +139,9 @@ variable "vpc_id" {
   description = "VPC ID"
   type        = string
   
+}
+
+variable "sg_alb_id" {
+  description = "value of the security group id"
+  type = string
 }
