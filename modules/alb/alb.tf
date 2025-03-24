@@ -23,10 +23,14 @@ resource "aws_lb_listener" "lb-listener-80" {
   protocol          = "HTTP"
 
   default_action {
-    type = "forward"
-    target_group_arn = aws_lb_target_group.target-group.arn
-  }
+    type = "fixed-response"
 
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Health OK"
+      status_code  = "200"
+    }
+  }
   tags = var.tags
 }
 
@@ -46,7 +50,27 @@ resource "aws_lb_listener" "lb-listener-80" {
 #   depends_on = [aws_lb_target_group.target-group]
 # }
 
+resource "aws_lb_listener_rule" "ecs_alb_listener_rule" {
+  count        = var.create_alb ? 1 : 0
+  listener_arn = aws_lb_listener.lb-listener-80[0].arn
+  priority     = 100
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.target_group[0].arn
+  }
 
+  # condition {
+  #   host_header {
+  #     values = [var.domain_name]
+  #   }
+  # }G
+
+  condition {
+    path_pattern {
+      values = ["/*"]
+    }
+  }
+}
 
 resource "aws_lb_target_group" "target-group" {
   //name        = "aws_alb_tg_${var.stage}-${var.servicename}"
