@@ -20,5 +20,5 @@ output "launch_template_version" {
 
 output "create_ecs_sg" {
   description = "Whether to create a security group for ECS container instances"
-  value       = var.create_ecs_sg
+  value       = var.create_ecs
 }

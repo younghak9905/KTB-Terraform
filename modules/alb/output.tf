@@ -20,3 +20,9 @@ output "sg_alb_id" {
   description = "ALB Security Group ID"
   value       = aws_security_group.sg_alb.id
 }
+
+output "create_alb" {
+    description = "Whether to create an ALB"
+    value       = var.create_alb
+  
+}

@@ -3,7 +3,7 @@ resource "aws_lb" "alb" {
   count = var.create_alb ? 1 : 0
   internal           = var.internal
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.sg_alb.id]
+  security_groups    = [aws_security_group.sg_alb[0].id]
   subnets            = var.subnet_ids
 
   enable_deletion_protection = false
@@ -18,7 +18,7 @@ resource "aws_lb" "alb" {
 # 🔵 HTTP 리스너 (80번 포트)
 resource "aws_lb_listener" "lb-listener-80" {
   count = var.create_alb ? 1 : 0
-  load_balancer_arn = aws_lb.alb.arn
+  load_balancer_arn = aws_lb.alb[0].arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -50,6 +50,7 @@ resource "aws_lb_listener" "lb-listener-80" {
 
 resource "aws_lb_target_group" "target-group" {
   //name        = "aws_alb_tg_${var.stage}-${var.servicename}"
+  count = var.create_alb ? 1 : 0
   port        = var.port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -69,6 +70,7 @@ resource "aws_lb_target_group" "target-group" {
     { Name = "aws-alb-tg-${var.stage}-${var.servicename}" },
     var.tags
   )
+  depends_on = [aws_lb_listener.lb-listener-80]
 }
 
 #resource "aws_lb_target_group_attachment" "target-group-attachment" {

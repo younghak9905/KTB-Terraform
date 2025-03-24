@@ -155,6 +155,7 @@ module "asg" {
 
 module "ecs_ec2" {
   source      = "../modules/ecs_ec2"
+  prefix_name = "terraform-zero9905-ecs"
   cluster_name  = "my-ecs-cluster"
   ecs_ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
