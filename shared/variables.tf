@@ -90,6 +90,8 @@ variable "alb_security_group_id" {
 variable "key_name" {
   description = "EC2 인스턴스의 SSH 키 이름"
   type        = string
+  default = "0317"
+  #tfvars 파일에서 참조
 }
 /*
 variable "kms_key_id" {
