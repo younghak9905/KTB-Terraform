@@ -145,9 +145,3 @@ variable "sg_alb_id" {
   description = "value of the security group id"
   type = string
 }
-
-variable "bastion_sg_ids" {
-  description = "Bastion 서버의 보안 그룹 ID 목록 (SSH 접속용)"
-  type        = list(string)
-  default     = []
-}

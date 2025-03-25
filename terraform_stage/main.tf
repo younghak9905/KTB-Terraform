@@ -170,7 +170,7 @@ module "ecs" {
   instance_name               = "terrafom-zero9905-ecs-instance"
   sg_alb_id = module.alb.sg_alb_id
   # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
-  bastion_sg_ids = [data.terraform_remote_state.shared.outputs.bastion_security_group_id]
+  
 
   # ECS Task 변수
   task_family                 = "my-task-family"
