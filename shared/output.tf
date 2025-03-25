@@ -1,24 +1,9 @@
 # shared/outputs.tf
 
-# VPC 출력
-output "vpc_id" {
-  description = "VPC ID"
-  value       = module.vpc.vpc_id
-}
 
 output "vpc_cidr" {
   description = "VPC CIDR 블록"
   value       = module.vpc.vpc_cidr
-}
-
-output "public_subnet_id" {
-  description = "퍼블릭 서브넷 ID (us-east-2a)"
-  value       = module.vpc.public_az1
-}
-
-output "private_subnet_id" {
-  description = "프라이빗 서브넷 ID (us-east-2a)"
-  value       = module.vpc.service_az1
 }
 
 # Bastion 출력

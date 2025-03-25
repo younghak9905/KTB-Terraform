@@ -15,7 +15,7 @@ terraform {
 
 # Bastion 서버 (OpenVPN용) 배포
 module "bastion" {
-  source = "./modules/bastion"
+  source = "../modules/bastion"
 
   stage          = var.stage
   servicename    = "${var.servicename}-bastion"

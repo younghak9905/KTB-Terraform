@@ -6,18 +6,6 @@ variable "region" {
   default     = "us-east-2"
 }
 
-variable "stage" {
-  description = "환경 스테이지 (예: dev, stage, prod)"
-  type        = string
-  default     = "shared"
-}
-
-variable "servicename" {
-  description = "서비스 이름 (리소스 이름 지정에 사용)"
-  type        = string
-  default     = "terraform_zero9905"
-}
-
 variable "tags" {
   description = "모든 리소스에 대한 추가 태그"
   type        = map(string)
