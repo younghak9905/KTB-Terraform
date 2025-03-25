@@ -98,3 +98,55 @@ name = "${var.cluster_name}-ecs-task-execution-role"
     ]
   })
 }
+
+# Update in modules/ecs/iam.tf
+# Add these role policies:
+
+# ECS 인스턴스가 ALB에 등록할 수 있는 권한
+resource "aws_iam_role_policy" "ecs_instance_role_policy" {
+  name   = "${var.cluster_name}-instance-policy"
+  role   = aws_iam_role.ecs_instance_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeInstances",
+          "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+          "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+          "elasticloadbalancing:Describe*",
+          "elasticloadbalancing:RegisterTargets",
+          "elasticloadbalancing:DeregisterTargets"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# ECS Task 실행 역할에 필요한 추가 권한
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# CloudWatch Logs 권한 추가
+resource "aws_iam_role_policy" "ecs_task_execution_logs_policy" {
+  name   = "${var.cluster_name}-task-execution-logs-policy"
+  role   = aws_iam_role.ecs_task_execution_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:CreateLogGroup"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}

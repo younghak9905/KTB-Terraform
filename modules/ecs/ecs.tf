@@ -101,7 +101,16 @@ resource "aws_ecs_service" "service" {
      container_port   = var.container_port
    }
 
-  depends_on = [aws_ecs_cluster.this]
+  # ECS 서비스가 ASG와 함께 작동하도록 설정
+  ordered_placement_strategy {
+    type  = "spread"
+    field = "instanceId"
+  }
+
+  # 중요: ALB 대상 그룹 등록을 위한 IAM 역할 설정
+  depends_on = [
+    aws_iam_role_policy_attachment.ecs_task_policy_attachment
+  ]
 }
 
 
