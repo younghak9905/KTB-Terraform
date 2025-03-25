@@ -11,6 +11,23 @@
         "hostPort": 80,
         "protocol": "tcp"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/terraform-zero9905",
+        "awslogs-region": "us-east-2",
+        "awslogs-stream-prefix": "nginx"
+      }
+    },
+    "healthCheck": {
+      "command": [
+        "CMD-SHELL",
+        "curl -f http://localhost/ || exit 1"
+      ],
+      "interval": 30,
+      "timeout": 5,
+      "retries": 3
+    }
   }
 ]
