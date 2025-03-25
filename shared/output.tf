@@ -1,11 +1,6 @@
 # shared/outputs.tf
 
 
-output "vpc_cidr" {
-  description = "VPC CIDR 블록"
-  value       = module.vpc.vpc_cidr
-}
-
 # Bastion 출력
 output "bastion_id" {
   description = "Bastion EC2 인스턴스 ID"
