@@ -4,12 +4,15 @@ name: 'Terraform'
 on:
   push:
     branches:
-      - 'stage/feature/*'
+      - 'feature/**'
+      - 'stage'
   pull_request:
     branches:
       - 'main'
     paths-ignore:
-      - '**/stage-terraform.yml'
+      - '**/shared-ci.yml'
+      - 'shared/**'
+      - 'modules/bastion/**'
   workflow_dispatch:
     inputs:
       confirm_destroy:

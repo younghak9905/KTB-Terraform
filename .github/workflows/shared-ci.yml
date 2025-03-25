@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - 'feature/**'
-     
+    paths:
+      - 'shared/**'
+      - 'modules/bastion/**'
   pull_request:
     branches:
       - main
