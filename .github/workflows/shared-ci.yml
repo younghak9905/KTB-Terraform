@@ -15,9 +15,10 @@ on:
   workflow_dispatch:
     inputs:
       confirm_destroy:
-        description: '인프라 삭제 확인 (DESTROY 입력시 삭제)'
-        required: false
-        default: ''
+        description: 'Confirm if you want to destroy the Terraform backend (type DESTROY to confirm)'
+        required: true
+        default: 'DESTROY'
+
 
 env:
   AWS_REGION: us-east-2
