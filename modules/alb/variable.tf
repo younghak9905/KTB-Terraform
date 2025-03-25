@@ -47,10 +47,10 @@ variable "port" {
 variable "vpc_id" {
   type = string
 }
-
+/*
 variable "instance_ids" {
   type = list(string)
-}
+}*/
 
 variable "domain" {
   type    = string
@@ -90,3 +90,10 @@ variable "availability_zone" {
   type    = string
   default = ""
 }
+
+variable "create_alb" {
+  type    = bool
+  default = true
+
+}
+
