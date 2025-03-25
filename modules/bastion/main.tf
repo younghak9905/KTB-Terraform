@@ -89,94 +89,13 @@ resource "aws_instance" "bastion" {
  # kms_key_id            = var.kms_key_id
   }
 
-  user_data = <<-EOF
-    #!/bin/bash
-    # 시스템 업데이트
-    yum update -y
-    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-    
-    # 필요한 패키지 설치
-    yum install -y wget net-tools jq awscli
-
-    # OpenVPN Access Server 설치 준비
-    # 실제 설치는 연결 후 수동으로 수행하거나, 스크립트를 확장하여 자동화할 수 있습니다.
-    echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-    sysctl -p
-
-
-    # OpenVPN 설치 스크립트 복사
-cat > /home/ec2-user/openvpn-install.sh << 'OPENVPNSCRIPT'
-${file("${path.module}/scripts/openvpn-install.sh")}
-OPENVPNSCRIPT
-
-chmod +x /home/ec2-user/openvpn-install.sh
-chown ec2-user:ec2-user /home/ec2-user/openvpn-install.sh
-
-# 안내 메시지 생성
-cat > /home/ec2-user/README.txt << EOF
-=== OpenVPN 설치 안내 ===
-
-1. 다음 명령어로 OpenVPN을 설치하세요:
-   sudo bash openvpn-install.sh
-
-2. 설치가 완료되면 client1.ovpn 파일이 생성됩니다.
-
-3. 다음 명령어로 이 파일을 로컬 컴퓨터로 다운로드하세요:
-   scp -i your-key.pem ec2-user@$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):/home/ec2-user/client1.ovpn .
-
-4. OpenVPN Connect 앱에서 .ovpn 파일을 가져와 사용하세요.
-
-
-chown ec2-user:ec2-user /home/ec2-user/README.txt
-
-    
-    # ECS 인스턴스 접속을 위한 SSH 설정
-    echo "# EC2 인스턴스 접속 설정" >> /home/ec2-user/.ssh/config
-    echo "Host 10.*" >> /home/ec2-user/.ssh/config
-    echo "    User ec2-user" >> /home/ec2-user/.ssh/config
-    echo "    IdentityFile ~/.ssh/id_rsa" >> /home/ec2-user/.ssh/config
-    echo "    StrictHostKeyChecking no" >> /home/ec2-user/.ssh/config
-    
-    # 권한 설정
-    chmod 600 /home/ec2-user/.ssh/config
-    chown ec2-user:ec2-user /home/ec2-user/.ssh/config
-    
-    # AWS CLI 유틸리티 스크립트 생성
-    cat > /usr/local/bin/list-ecs-instances.sh << 'SCRIPT'
-#!/bin/bash
-# ECS 클러스터의 EC2 인스턴스 목록 조회 스크립트
-CLUSTER_NAME="$${1:-terraform-zero9905-ecs-cluster}"
-REGION="$${2:-us-east-2}"
-
-echo "ECS 클러스터 '$CLUSTER_NAME'의 컨테이너 인스턴스 조회 중..."
-CONTAINER_INSTANCES=$(aws ecs list-container-instances --cluster $CLUSTER_NAME --region $REGION | jq -r '.containerInstanceArns[]')
-
-if [ -z "$CONTAINER_INSTANCES" ]; then
-  echo "컨테이너 인스턴스를 찾을 수 없습니다."
-  exit 1
-fi
-
-echo "컨테이너 인스턴스 목록:"
-for INSTANCE_ARN in $CONTAINER_INSTANCES; do
-  EC2_INSTANCE=$(aws ecs describe-container-instances --cluster $CLUSTER_NAME --container-instances $INSTANCE_ARN --region $REGION | jq -r '.containerInstances[].ec2InstanceId')
-  EC2_INFO=$(aws ec2 describe-instances --instance-ids $EC2_INSTANCE --region $REGION)
-  PRIVATE_IP=$(echo $EC2_INFO | jq -r '.Reservations[].Instances[].PrivateIpAddress')
-  INSTANCE_TYPE=$(echo $EC2_INFO | jq -r '.Reservations[].Instances[].InstanceType')
-  STATUS=$(echo $EC2_INFO | jq -r '.Reservations[].Instances[].State.Name')
-  
-  echo "- 인스턴스 ID: $EC2_INSTANCE"
-  echo "  Private IP: $PRIVATE_IP"
-  echo "  유형: $INSTANCE_TYPE"
-  echo "  상태: $STATUS"
-  echo ""
-done
-SCRIPT
-
-    chmod +x /usr/local/bin/list-ecs-instances.sh
-    
-    # 호스트 이름 설정
-    hostnamectl set-hostname bastion-${var.stage}-${var.servicename}
-  EOF
+   # 이 방식으로 변경: 인라인 스크립트 대신 템플릿 파일 사용
+  user_data = templatefile("${path.module}/scripts/user_data.sh.tpl", {
+    stage = var.stage,
+    servicename = var.servicename,
+    openvpn_script = file("${path.module}/scripts/openvpn-install.sh"),
+    ecs_script = file("${path.module}/scripts/list-ecs-instances.sh")
+  })
 
   tags = merge(
     { Name = "aws-ec2-${var.stage}-${var.servicename}-bastion" },
