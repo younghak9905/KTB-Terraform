@@ -14,11 +14,30 @@ on:
       - 'shared/**'
   workflow_dispatch:
     inputs:
+      action:
+        description: '수행할 작업 (plan, apply, destroy)'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      environment:
+        description: '대상 환경 (dev, stage, prod)'
+        required: true
+        default: 'shared'
+        type: choice
+        options:
+          - shared
+          - dev
+          - stage
+          - prod
       confirm_destroy:
-        description: 'Confirm if you want to destroy the Terraform backend (type DESTROY to confirm)'
+        description: '인프라 삭제 확인 (DESTROY를 입력하세요)'
         required: false
+        type: string
         default: ''
-
 
 env:
   AWS_REGION: us-east-2
@@ -28,7 +47,7 @@ jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
-    environment: shared
+    environment: ${{ github.event.inputs.environment || 'shared' }}
     
     defaults:
       run:
@@ -70,17 +89,23 @@ jobs:
         id: validate
         run: terraform validate
 
+      # 자동 PUSH 또는 수동 PLAN 실행 시 수행할 Plan
       - name: Terraform Plan
         id: plan
-        if: github.event.inputs.confirm_destroy != 'DESTROY' && github.event_name != 'pull_request'
+        if: |
+          (github.event_name == 'push' || 
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')) && 
+          github.event_name != 'pull_request'
         run: terraform plan -input=false -parallelism=10 -out=tfplan
         
+      # PR시 수행할 Plan
       - name: Terraform Plan (PR)
         id: plan_pr
-        if: github.event.inputs.confirm_destroy != 'DESTROY' && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         run: terraform plan -input=false -parallelism=10
         continue-on-error: true
 
+      # PR 시 Plan 결과 댓글 추가
       - name: Post Plan to PR
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
@@ -109,10 +134,27 @@ jobs:
               body: output
             })
 
+      # Main 브랜치 push 또는 수동 Apply 실행 시 수행
       - name: Terraform Apply
-        if: github.event.inputs.confirm_destroy != 'DESTROY' && github.event_name != 'pull_request'
+        if: |
+          (github.ref == 'refs/heads/main' && github.event_name == 'push') || 
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
         run: terraform apply -auto-approve tfplan
         
+      # 수동 Destroy 실행 시 수행 (확인 문자열 필요)
       - name: Terraform Destroy
-        if: github.event.inputs.confirm_destroy == 'DESTROY'
+        if: |
+          github.event_name == 'workflow_dispatch' && 
+          github.event.inputs.action == 'destroy' && 
+          github.event.inputs.confirm_destroy == 'DESTROY'
         run: terraform destroy -auto-approve
+        
+      # Destroy 명령어 실패 시 경고 메시지
+      - name: Destroy Confirmation Failed
+        if: |
+          github.event_name == 'workflow_dispatch' && 
+          github.event.inputs.action == 'destroy' && 
+          github.event.inputs.confirm_destroy != 'DESTROY'
+        run: |
+          echo "::error::인프라 삭제를 위해서는 confirm_destroy 필드에 'DESTROY'를 정확히 입력해야 합니다."
+          exit 1
