@@ -71,7 +71,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event.inputs.confirm_destroy != 'DESTROY'
+        if: github.event.inputs.confirm_destroy != 'DESTROY' && github.event_name != 'pull_request'
+        run: terraform plan -input=false -parallelism=10 -out=tfplan
+        
+      - name: Terraform Plan (PR)
+        id: plan_pr
+        if: github.event.inputs.confirm_destroy != 'DESTROY' && github.event_name == 'pull_request'
         run: terraform plan -input=false -parallelism=10
         continue-on-error: true
 
@@ -79,14 +84,14 @@ jobs:
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         env:
-          PLAN: "${{ steps.plan.outputs.stdout }}"
+          PLAN: "${{ steps.plan_pr.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan_pr.outcome }}\`
 
             <details><summary>Show Plan</summary>
 
@@ -104,8 +109,8 @@ jobs:
             })
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.event.inputs.confirm_destroy != 'DESTROY'
-        run: terraform apply -auto-approve -parallelism=10
+        if: github.event.inputs.confirm_destroy != 'DESTROY' && github.event_name != 'pull_request'
+        run: terraform apply -auto-approve tfplan
         
       - name: Terraform Destroy
         if: github.event.inputs.confirm_destroy == 'DESTROY'
