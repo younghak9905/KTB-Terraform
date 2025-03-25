@@ -10,16 +10,16 @@ terraform {
   }
 }
 
-
-data "terraform_remote_state" "shared" {
-  backend = "s3"
-  config = {
-    bucket         = "zero9905-terraformstate"
-    key            = "shared/terraform/terraform.tfstate"
-    region         = "us-east-2"
-    dynamodb_table = "zero9905-terraformstate"
-  }
-}
+#
+#data "terraform_remote_state" "shared" {
+#  backend = "s3"
+#  config = {
+#    bucket         = "zero9905-terraformstate"
+#    key            = "shared/terraform/terraform.tfstate"
+#    region         = "us-east-2"
+#    dynamodb_table = "zero9905-terraformstate"
+#  }
+#}
 
 module "vpc" {
   source              = "../modules/vpc"
@@ -164,7 +164,7 @@ module "ecs" {
   instance_type = "t3.micro"
   subnet_ids    = [module.vpc.service_az1, module.vpc.service_az2]
   associate_public_ip_address = true
-  desired_capacity            = 2
+  desired_capacity            = 1
   min_size                    = 1
   max_size                    = 3
   instance_name               = "terrafom-zero9905-ecs-instance"
