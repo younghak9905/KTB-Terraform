@@ -22,7 +22,7 @@ resource "aws_launch_template" "ecs_instance_lt" {
     yum install -y amazon-ssm-agent
     systemctl enable amazon-ssm-agent
     systemctl start amazon-ssm-agent
-    
+
   EOF
   )
 
@@ -50,9 +50,19 @@ resource "aws_security_group" "sg_ecs" {
     from_port       = 22
     to_port         = 22
     protocol        = "TCP"
-    security_groups = var.bastion_sg_ids # Bastion 보안 그룹 ID 목록
+    cidr_blocks = ["10.0.0.0/24"]
     description     = "SSH access from Bastion"
   }
+
+   # Bastion 서버에서 SSH 접속 허용
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "TCP"
+    cidr_blocks = ["10.0.0.0/24"]
+    description     = "SSH access from Bastion"
+  }
+
 
   egress {
     from_port   = 0
