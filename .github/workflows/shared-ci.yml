@@ -1,0 +1,152 @@
+name: 'Shared Infrastructure CI/CD'
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+     
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'shared/**'
+
+  workflow_dispatch:
+    inputs:
+      action:
+        description: '수행할 작업 (plan, apply, destroy)'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      environment:
+        description: '대상 환경 (dev, stage, prod)'
+        required: true
+        default: 'shared'
+        type: choice
+        options:
+          - shared
+          - dev
+          - stage
+          - prod
+      confirm_destroy:
+        description: '인프라 삭제 확인 (DESTROY를 입력하세요)'
+        required: false
+        type: string
+        default: ''
+
+env:
+  AWS_REGION: us-east-2
+  TERRAFORM_DIR: ./shared
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ env.TERRAFORM_DIR }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.TF_DEV_ZERO9905_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.TF_DEV_ZERO9905_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init -reconfigure \
+            -backend-config="region=us-east-2" \
+            -backend-config="bucket=zero9905-terraformstate" \
+            -backend-config="key=shared/terraform/terraform.tfstate" \
+            -backend-config="dynamodb_table=zero9905-terraformstate" \
+            -lock-timeout=300s
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        if: >
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
+        run: terraform plan -input=false -parallelism=10 -out=tfplan
+
+      - name: Terraform Plan (PR)
+        id: plan_pr
+        if: github.event_name == 'pull_request'
+        run: terraform plan -input=false -parallelism=10
+        continue-on-error: true
+
+      - name: Post Plan to PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "${{ steps.plan_pr.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan_pr.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Apply
+        if: >
+          (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Destroy
+        if: >
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.action == 'destroy' &&
+          github.event.inputs.confirm_destroy == 'DESTROY'
+        run: terraform destroy -auto-approve
+
+      - name: Destroy Confirmation Failed
+        if: >
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.action == 'destroy' &&
+          github.event.inputs.confirm_destroy != 'DESTROY'
+        run: |
+          echo "::error::인프라 삭제를 위해서는 confirm_destroy 필드에 'DESTROY'를 정확히 입력해야 합니다."
+          exit 1

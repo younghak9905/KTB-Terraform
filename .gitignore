@@ -2,3 +2,4 @@
 aws-mfa-script/
 .DS_Store
 error
+*.tfvars
