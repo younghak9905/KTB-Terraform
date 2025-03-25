@@ -15,6 +15,14 @@ resource "aws_launch_template" "ecs_instance_lt" {
   user_data = base64encode(<<-EOF
     #!/bin/bash
     echo ECS_CLUSTER=${aws_ecs_cluster.this.name} >> /etc/ecs/ecs.config
+
+    yum update -y
+
+    # SSM Agent 설치 (Amazon Linux 2 기준)
+    yum install -y amazon-ssm-agent
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+    
   EOF
   )
 
@@ -35,6 +43,15 @@ resource "aws_security_group" "sg_ecs" {
     to_port         = 80
     protocol        = "TCP"
     security_groups = [var.sg_alb_id] # ALB에서 오는 트래픽만 허용
+  }
+
+  # Bastion 서버에서 SSH 접속 허용
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "TCP"
+    security_groups = var.bastion_sg_ids # Bastion 보안 그룹 ID 목록
+    description     = "SSH access from Bastion"
   }
 
   egress {

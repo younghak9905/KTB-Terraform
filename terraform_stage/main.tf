@@ -158,6 +158,8 @@ module "ecs" {
   max_size                    = 3
   instance_name               = "terrafom-zero9905-ecs-instance"
   sg_alb_id = module.alb.sg_alb_id
+  # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
+  bastion_sg_ids = [module.bastion.bastion_sg_id]  # 또는 데이터 소스로 조회할 수 있음
 
   # ECS Task 변수
   task_family                 = "my-task-family"
