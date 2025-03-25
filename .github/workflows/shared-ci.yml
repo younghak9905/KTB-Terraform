@@ -1,43 +1,46 @@
 name: 'Shared Infrastructure CI/CD'
 
+
 on:
-  push:
-    branches:
-      - 'main'
-      - 'feature/*'
-    paths:
-      - 'shared/**'
-  pull_request:
-    branches:
-      - 'main'
-    paths:
-      - 'shared/**'
-  workflow_dispatch:
-    inputs:
-      action:
-        description: '수행할 작업 (plan, apply, destroy)'
-        required: true
-        default: 'plan'
-        type: choice
-        options:
-          - plan
-          - apply
-          - destroy
-      environment:
-        description: '대상 환경 (dev, stage, prod)'
-        required: true
-        default: 'shared'
-        type: choice
-        options:
-          - shared
-          - dev
-          - stage
-          - prod
-      confirm_destroy:
-        description: '인프라 삭제 확인 (DESTROY를 입력하세요)'
-        required: false
-        type: string
-        default: ''
+    push:
+      branches:
+        - main
+        - 'feature/**'  # ✅ 수정: wildcard 브랜치 감지
+      paths:
+        - 'shared/**'
+  
+    pull_request:
+      branches:
+        - main
+      paths:
+        - 'shared/**'
+  
+    workflow_dispatch:
+      inputs:
+        action:
+          description: '수행할 작업 (plan, apply, destroy)'
+          required: true
+          default: 'plan'
+          type: choice
+          options:
+            - plan
+            - apply
+            - destroy
+        environment:
+          description: '대상 환경 (dev, stage, prod)'
+          required: true
+          default: 'shared'
+          type: choice
+          options:
+            - shared
+            - dev
+            - stage
+            - prod
+        confirm_destroy:
+          description: '인프라 삭제 확인 (DESTROY를 입력하세요)'
+          required: false
+          type: string
+          default: ''
 
 env:
   AWS_REGION: us-east-2
