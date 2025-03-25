@@ -16,8 +16,8 @@ on:
     inputs:
       confirm_destroy:
         description: 'Confirm if you want to destroy the Terraform backend (type DESTROY to confirm)'
-        required: true
-        default: 'DESTROY'
+        required: false
+        default: ''
 
 
 env:
