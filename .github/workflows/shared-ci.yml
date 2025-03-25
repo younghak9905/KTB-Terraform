@@ -17,7 +17,7 @@ on:
       action:
         description: '수행할 작업 (plan, apply, destroy)'
         required: true
-        default: 'plan'
+        default: 'apply'
         type: choice
         options:
           - plan
@@ -135,15 +135,5 @@ jobs:
       - name: Terraform Destroy
         if: >
           github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.action == 'destroy' &&
-          github.event.inputs.confirm_destroy == 'DESTROY'
+          github.event.inputs.action == 'destroy' 
         run: terraform destroy -auto-approve
-
-      - name: Destroy Confirmation Failed
-        if: >
-          github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.action == 'destroy' &&
-          github.event.inputs.confirm_destroy != 'DESTROY'
-        run: |
-          echo "::error::인프라 삭제를 위해서는 confirm_destroy 필드에 'DESTROY'를 정확히 입력해야 합니다."
-          exit 1
