@@ -135,5 +135,23 @@ jobs:
       - name: Terraform Destroy
         if: >
           github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.action == 'destroy' 
-        run: terraform destroy -auto-approve
+          github.event.inputs.action == 'destroy' &&
+          github.event.inputs.confirm_destroy == 'DESTROY'
+        run: |
+          terraform init -reconfigure \
+            -backend-config="region=us-east-2" \
+            -backend-config="bucket=zero9905-terraformstate" \
+            -backend-config="key=shared/terraform/terraform.tfstate" \
+            -backend-config="dynamodb_table=zero9905-terraformstate" \
+            -lock-timeout=300s
+
+          terraform destroy -auto-approve
+
+      - name: Destroy Confirmation Failed
+        if: >
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.action == 'destroy' &&
+          github.event.inputs.confirm_destroy != 'DESTROY'
+        run: |
+          echo "::error::인프라 삭제를 위해서는 confirm_destroy 필드에 'DESTROY'를 정확히 입력해야 합니다."
+          exit 1
