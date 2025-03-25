@@ -38,7 +38,7 @@ module "bastion" {
 
 # GitLab 서버 배포
 module "gitlab" {
-  source = "./modules/gitlab"
+  source = "../modules/gitlab"
 
   stage             = var.stage
   servicename       = "${var.servicename}-gitlab"
