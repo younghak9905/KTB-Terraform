@@ -1,4 +1,4 @@
-# modules/bastion/main.tf
+# shared/modules/bastion/main.tf
 # OpenVPN용 Bastion 서버 모듈
 
 # Bastion 보안 그룹
@@ -61,9 +61,10 @@ resource "aws_security_group" "bastion_sg" {
     description = "Allow SSH to VPC resources"
   }
 
-  tags = {
-    Name = "aws-sg-${var.stage}-${var.servicename}-bastion"
-  }
+  tags = merge(
+    { Name = "aws-sg-${var.stage}-${var.servicename}-bastion" },
+    var.tags
+  )
 
   lifecycle {
     create_before_destroy = true
@@ -85,7 +86,7 @@ resource "aws_instance" "bastion" {
     volume_size           = var.root_volume_size
     delete_on_termination = true
     encrypted             = true
-    # KMS 키 ID 제거 - AWS 관리형 키 사용
+ # kms_key_id            = var.kms_key_id
   }
 
   user_data = <<-EOF
@@ -96,13 +97,40 @@ resource "aws_instance" "bastion" {
     
     # 필요한 패키지 설치
     yum install -y wget net-tools jq awscli
-    
+
     # OpenVPN Access Server 설치 준비
+    # 실제 설치는 연결 후 수동으로 수행하거나, 스크립트를 확장하여 자동화할 수 있습니다.
     echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
     sysctl -p
+
+
+    # OpenVPN 설치 스크립트 복사
+cat > /home/ec2-user/openvpn-install.sh << 'OPENVPNSCRIPT'
+${file("${path.module}/scripts/openvpn-install.sh")}
+OPENVPNSCRIPT
+
+chmod +x /home/ec2-user/openvpn-install.sh
+chown ec2-user:ec2-user /home/ec2-user/openvpn-install.sh
+
+# 안내 메시지 생성
+cat > /home/ec2-user/README.txt << EOF
+=== OpenVPN 설치 안내 ===
+
+1. 다음 명령어로 OpenVPN을 설치하세요:
+   sudo bash openvpn-install.sh
+
+2. 설치가 완료되면 client1.ovpn 파일이 생성됩니다.
+
+3. 다음 명령어로 이 파일을 로컬 컴퓨터로 다운로드하세요:
+   scp -i your-key.pem ec2-user@$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):/home/ec2-user/client1.ovpn .
+
+4. OpenVPN Connect 앱에서 .ovpn 파일을 가져와 사용하세요.
+
+
+chown ec2-user:ec2-user /home/ec2-user/README.txt
+
     
     # ECS 인스턴스 접속을 위한 SSH 설정
-    mkdir -p /home/ec2-user/.ssh
     echo "# EC2 인스턴스 접속 설정" >> /home/ec2-user/.ssh/config
     echo "Host 10.*" >> /home/ec2-user/.ssh/config
     echo "    User ec2-user" >> /home/ec2-user/.ssh/config
@@ -150,9 +178,15 @@ SCRIPT
     hostnamectl set-hostname bastion-${var.stage}-${var.servicename}
   EOF
 
-  tags = {
-    Name = "aws-ec2-${var.stage}-${var.servicename}-bastion"
-  }
+  tags = merge(
+    { Name = "aws-ec2-${var.stage}-${var.servicename}-bastion" },
+    var.tags
+  )
+
+  volume_tags = merge(
+    { Name = "aws-ebs-${var.stage}-${var.servicename}-bastion" },
+    var.tags
+  )
 
   lifecycle {
     ignore_changes = [ami, user_data]
@@ -164,7 +198,10 @@ resource "aws_eip" "bastion" {
   instance = aws_instance.bastion.id
   domain   = "vpc"
   
-  tags = {
-    Name = "aws-eip-${var.stage}-${var.servicename}-bastion"
-  }
+  tags = merge(
+    { Name = "aws-eip-${var.stage}-${var.servicename}-bastion" },
+    var.tags
+  )
 }
+
+
