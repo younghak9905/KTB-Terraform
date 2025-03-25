@@ -136,6 +136,13 @@ module "alb" {
 
 }
 
+# terraform_stage/main.tf에 추가
+resource "aws_cloudwatch_log_group" "ecs_logs" {
+  name              = "/ecs/terraform-zero9905"
+  retention_in_days = 7
+
+  tags = var.tags
+}
 
 
 module "ecs" {
@@ -170,6 +177,7 @@ module "ecs" {
     Environment = "stage"
     Project     = "ecs-project"
   }
+  depends_on = [aws_cloudwatch_log_group.ecs_logs]
 }
 
 
