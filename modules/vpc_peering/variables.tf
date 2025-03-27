@@ -49,3 +49,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_route_creation" {
+  description = "라우팅 테이블에 라우트를 생성할지 여부"
+  type        = bool
+  default     = true
+}

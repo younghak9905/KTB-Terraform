@@ -107,6 +107,8 @@ module "vpc_peering" {
   auto_accept              = true
   
   tags = var.tags
+
+  enable_route_creation = true
 }
 
 resource "aws_security_group" "sg-ec2" {
