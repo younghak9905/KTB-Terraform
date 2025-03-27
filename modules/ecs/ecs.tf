@@ -20,15 +20,6 @@ resource "aws_launch_template" "ecs_instance_lt" {
   # 필요 시 추가 설정 (예: key_name, block_device_mappings 등) 추가
 }
 
-data "template_file" "user_data" {
-  template = file("./user_data.sh")
-
-  vars = {
-    ecs_cluster_name = aws_ecs_cluster.this.name
-  }
-}
-
-
 resource "aws_security_group" "sg_ecs" {
   count  = var.create_ecs ? 1 : 0
   name        = "sg_${var.cluster_name}_ecs"
