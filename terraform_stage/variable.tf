@@ -161,3 +161,11 @@ variable "create_ecs" {
   default = true
 }
 
+
+# 공통 변수
+variable "key_name" {
+  description = "EC2 인스턴스의 SSH 키 이름"
+  type        = string
+  default = "0317"
+  #tfvars 파일에서 참조
+}

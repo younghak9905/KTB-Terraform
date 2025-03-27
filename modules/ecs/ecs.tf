@@ -7,30 +7,18 @@ resource "aws_launch_template" "ecs_instance_lt" {
   name_prefix   = "${var.cluster_name}-cluster"
   image_id      = var.ami_id
   instance_type = var.instance_type
-
+  key_name = var.key_name
+  user_data = base64encode(templatefile("${path.module}/scripts/user_data.sh.tpl", {
+  ecs_cluster_name = aws_ecs_cluster.this.name
+}))
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs_instance_profile.name
   }
-
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    echo ECS_CLUSTER=${aws_ecs_cluster.this.name} >> /etc/ecs/ecs.config
-
-    yum update -y
-
-    # SSM Agent 설치 (Amazon Linux 2 기준)
-    yum install -y amazon-ssm-agent
-    systemctl enable amazon-ssm-agent
-    systemctl start amazon-ssm-agent
-
-  EOF
-  )
 
   vpc_security_group_ids = [aws_security_group.sg_ecs[0].id]
 
   # 필요 시 추가 설정 (예: key_name, block_device_mappings 등) 추가
 }
-
 
 resource "aws_security_group" "sg_ecs" {
   count  = var.create_ecs ? 1 : 0

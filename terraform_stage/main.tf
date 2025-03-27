@@ -160,7 +160,7 @@ module "ecs" {
   source = "../modules/ecs"
   vpc_id = module.vpc.vpc_id
   cluster_name                = "terraform-zero9905-ecs-cluster"
-  ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  ami_id    = "ami-059601b8419c53014"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
   subnet_ids    = [module.vpc.service_az1, module.vpc.service_az2]
   associate_public_ip_address = true
@@ -169,6 +169,7 @@ module "ecs" {
   max_size                    = 3
   instance_name               = "terrafom-zero9905-ecs-instance"
   sg_alb_id = module.alb.sg_alb_id
+  key_name = var.key_name
   # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
   
 
@@ -194,55 +195,6 @@ module "ecs" {
 }
 
 
-/*
-module "asg" {
-  source                      = "../modules/asg"
-  asg_name                    = "my_ecs_asg"
-  desired_capacity            = 2
-  min_size                    = 1
-  max_size                    = 3
-  launch_template_id          = module.ecs_ec2.launch_template_id
-  launch_template_version     = module.ecs_ec2.launch_template_version
-  subnet_ids                  = [var.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
-  health_check_type           = "EC2"
-  health_check_grace_period   = 300
-  instance_name               = var.servicename
-  tags                        = { Environment = "stage", Project = "myproject",Type="asg" }
-  stage                       = var.stage    
-  servicename                 = var.servicename  
-}
-
-module "ecs_ec2" {
-  source      = "../modules/ecs_ec2"
-  prefix_name = "terraform-zero9905-ecs"
-  cluster_name  = "my-ecs-cluster"
-  ecs_ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
-  instance_type = "t3.micro"
-  key_name      = "my-key"
-  #user_data     = "#!/bin/bash\nyum update -y"
-  instance_name = var.servicename
-  tags          = { Environment = "stage", Project = "myproject", Type = "ecs-ec2" }
-  vpc_id        = module.vpc.vpc_id
-  region        = var.region
-  subnet_ids    = [var.subnet_service_az1, var.subnet_service_az2]
-  stage         = var.stage
-  servicename   = var.servicename 
-
-  # ALB 관련 값 전달 (ALB 모듈의 출력값 사용)
-  alb_target_group_arn  = module.alb.target_group_arn
-  alb_listener_arn      = module.alb.listener_arn
-  sg_list               = [module.alb.sg_alb_id]  # ✅ 수정: module.alb.sg_alb_id로 변경
-
-  #컨테이너 관련 설정
-  container_name = "my-container"
-  container_port = 80
-  container_image = "nginx:latest"
-
-
-
-}
-
-*/
 #RDS
 # module "rds" {
 #   #default engin aurora-mysql8.0
