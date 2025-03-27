@@ -170,8 +170,3 @@ variable "key_name" {
   #tfvars 파일에서 참조
 }
 
-variable "shared_vpc_cidr" {
-  description = "Shared VPC의 CIDR 블록"
-  type        = string
-  default     = "10.3.0.0/16"  # shared VPC의 CIDR 블록
-}

@@ -17,7 +17,7 @@ fi
 
 # 서버 IP 가져오기
 SERVER_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-CLIENT_NAME="client1"
+CLIENT_NAME="client1_$(date +%Y%m%d%H%M%S)"
 
 echo -e "${GREEN}OpenVPN 인증서 기반 설치 스크립트를 시작합니다...${NC}"
 echo -e "${YELLOW}서버 IP: ${SERVER_IP}${NC}"

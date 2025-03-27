@@ -96,7 +96,7 @@ module "vpc_peering" {
   requester_vpc_id         = module.vpc.vpc_id
   accepter_vpc_id          = data.terraform_remote_state.shared.outputs.vpc_id
   requester_cidr_block     = var.vpc_ip_range
-  accepter_cidr_block      = var.shared_vpc_cidr
+  accepter_cidr_block      = data.terraform_remote_state.shared.outputs.vpc_cidr
   requester_route_table_ids = concat(
     [module.vpc.public_route_table_id],
     module.vpc.private_route_table_ids
