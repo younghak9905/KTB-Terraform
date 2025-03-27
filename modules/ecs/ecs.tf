@@ -8,7 +8,7 @@ resource "aws_launch_template" "ecs_instance_lt" {
   image_id      = var.ami_id
   instance_type = var.instance_type
   key_name = var.key_name
-  user_data = base64decode(data.template_file.user_data.rendered)
+  user_data = base64encode(data.template_file.user_data.rendered) 
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs_instance_profile.name
   }
@@ -19,7 +19,7 @@ resource "aws_launch_template" "ecs_instance_lt" {
 }
 
 data "template_file" "user_data" {
-  template = file("user_data.sh")
+  template = file("./user_data.sh")
 
   vars = {
     ecs_cluster_name = aws_ecs_cluster.this.name
