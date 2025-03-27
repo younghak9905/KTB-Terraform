@@ -206,7 +206,7 @@ module "ecs" {
   shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
 
   # ECS Task 변수
-  task_family                 = "my-task-family"
+  task_family                 = "zero-task-family"
   task_network_mode           = "bridge"
   container_definitions       = file("./container_definitions.json")
   task_cpu                    = "256"
