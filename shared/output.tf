@@ -36,8 +36,8 @@ output "vpc_cidr" {
 output "route_table_ids" {
   description = "VPC 라우팅 테이블 ID 목록"
   value       = [
-    aws_route_table.public_route_table.id,
-    aws_route_table.private_route_table.id
+    aws_route_table.pub_rt.id,
+    aws_route_table.prv_rt.id
   ]
 }
 /*
