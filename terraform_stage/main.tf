@@ -88,7 +88,7 @@ data "terraform_remote_state" "shared" {
     dynamodb_table = "zero9905-terraformstate"
   }
 }
-
+/*
 # VPC 피어링 추가
 module "vpc_peering" {
   source = "../modules/vpc_peering"
@@ -109,7 +109,7 @@ module "vpc_peering" {
   tags = var.tags
 
   enable_route_creation = true
-}
+}*/
 
 resource "aws_security_group" "sg-ec2" {
   count = var.create_ec2 ? 1 : 0
