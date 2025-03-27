@@ -145,3 +145,8 @@ variable "sg_alb_id" {
   description = "value of the security group id"
   type = string
 }
+
+variable "key_name" {
+  description = "key name"
+  type = string
+}
