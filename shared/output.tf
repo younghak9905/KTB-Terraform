@@ -21,6 +21,25 @@ output "bastion_security_group_id" {
   description = "Bastion 보안 그룹 ID"
   value       = module.bastion.bastion_security_group_id
 }
+
+# VPC 관련 출력
+output "vpc_id" {
+  description = "VPC ID"
+  value       = aws_vpc.my_vpc.id
+}
+
+output "vpc_cidr" {
+  description = "VPC CIDR 블록"
+  value       = aws_vpc.my_vpc.cidr_block
+}
+
+output "route_table_ids" {
+  description = "VPC 라우팅 테이블 ID 목록"
+  value       = [
+    aws_route_table.public_route_table.id,
+    aws_route_table.private_route_table.id
+  ]
+}
 /*
 
 # GitLab 출력
