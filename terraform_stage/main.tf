@@ -203,7 +203,7 @@ module "ecs" {
   sg_alb_id = module.alb.sg_alb_id
   key_name = var.key_name
   # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
-  shared_vpc_cidr = var.shared_vpc_cidr
+  shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
 
   # ECS Task 변수
   task_family                 = "my-task-family"
