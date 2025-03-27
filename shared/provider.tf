@@ -138,12 +138,6 @@ resource "aws_route_table_association" "prv_subnet_1a_asso" {
   route_table_id = aws_route_table.prv_rt.id
 }
 
-# 출력 정의
-output "vpc_id" {
-  description = "VPC ID"
-  value       = aws_vpc.my_vpc.id
-}
-
 output "public_subnet_id" {
   description = "퍼블릭 서브넷 ID"
   value       = aws_subnet.pub_subnet_1a.id

@@ -33,14 +33,13 @@ resource "aws_security_group" "sg_ecs" {
     security_groups = [var.sg_alb_id] # ALB에서 오는 트래픽만 허용
   }
 
-  # Bastion 서버에서 SSH 접속 허용
   ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "TCP"
-    cidr_blocks = ["10.0.0.0/24"]
-    description     = "SSH access from Bastion"
-  }
+  from_port   = 22
+  to_port     = 22
+  protocol    = "TCP"
+  cidr_blocks = [var.shared_vpc_cidr]  # Shared VPC에서 오는 SSH 트래픽 허용
+  description = "SSH access from Shared VPC"
+}
 
    # Bastion 서버에서 SSH 접속 허용
   ingress {

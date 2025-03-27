@@ -77,6 +77,38 @@ EOF
   depends_on = [module.vpc.sg-ec2-comm, module.iam-service-role.ec2-iam-role-profile]
 }*/
 
+
+# 주석 처리된 remote_state 부분 활성화
+data "terraform_remote_state" "shared" {
+  backend = "s3"
+  config = {
+    bucket         = "zero9905-terraformstate"
+    key            = "shared/terraform/terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "zero9905-terraformstate"
+  }
+}
+
+# VPC 피어링 추가
+module "vpc_peering" {
+  source = "../modules/vpc_peering"
+
+  requester_vpc_id         = module.vpc.vpc_id
+  accepter_vpc_id          = data.terraform_remote_state.shared.outputs.vpc_id
+  requester_cidr_block     = var.vpc_ip_range
+  accepter_cidr_block      = var.shared_vpc_cidr
+  requester_route_table_ids = concat(
+    [module.vpc.public_route_table_id],
+    module.vpc.private_route_table_ids
+  )
+  accepter_route_table_ids = data.terraform_remote_state.shared.outputs.route_table_ids
+  requester_name           = "${var.stage}-${var.servicename}"
+  accepter_name            = "shared-infrastructure"
+  auto_accept              = true
+  
+  tags = var.tags
+}
+
 resource "aws_security_group" "sg-ec2" {
   count = var.create_ec2 ? 1 : 0
   name   = "aws-sg-${var.stage}-${var.servicename}-ec2"
@@ -171,7 +203,7 @@ module "ecs" {
   sg_alb_id = module.alb.sg_alb_id
   key_name = var.key_name
   # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
-  
+  shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
 
   # ECS Task 변수
   task_family                 = "my-task-family"
