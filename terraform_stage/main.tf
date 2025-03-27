@@ -160,7 +160,7 @@ module "ecs" {
   source = "../modules/ecs"
   vpc_id = module.vpc.vpc_id
   cluster_name                = "terraform-zero9905-ecs-cluster"
-  ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  ami_id    = "ami-059601b8419c53014"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
   subnet_ids    = [module.vpc.service_az1, module.vpc.service_az2]
   associate_public_ip_address = true
