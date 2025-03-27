@@ -109,7 +109,7 @@ module "vpc_peering" {
   tags = var.tags
 
   enable_route_creation = true
-}*/
+}
 
 resource "aws_security_group" "sg-ec2" {
   count = var.create_ec2 ? 1 : 0
@@ -152,7 +152,7 @@ resource "aws_security_group" "sg-ec2" {
     ignore_changes = [ingress]
   }
 }
-
+*/
 module "alb" {
   source = "../modules/alb"
 
@@ -205,7 +205,7 @@ module "ecs" {
   sg_alb_id = module.alb.sg_alb_id
   key_name = var.key_name
   # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
-  shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
+  //shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
 
   # ECS Task 변수
   task_family                 = "zero-task-family"
