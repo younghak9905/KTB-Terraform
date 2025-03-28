@@ -22,6 +22,7 @@ cat > /srv/gitlab/docker-compose.yml << 'EOL'
 version: '3.6'
 services:
   gitlab:
+    container_name: gitlab
     image: 'gitlab/gitlab-ee:latest'
     restart: always
     hostname: 'gitlab.example.com'
@@ -49,6 +50,7 @@ cat > /srv/gitlab-runner/docker-compose.yml << 'EOL'
 version: '3.6'
 services:
   gitlab-runner:
+    container_name: gitlab-runner
     image: 'gitlab/gitlab-runner:latest'
     restart: always
     volumes:
