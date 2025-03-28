@@ -173,6 +173,6 @@ variable "key_name" {
 variable "service_port" {
   description = "서비스 포트"
   type        = number
-  default     = 8080
+  default     = 80
   
 }
