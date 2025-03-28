@@ -62,3 +62,8 @@ variable "key_name" {
   default = "0317"
   
 }
+
+variable "create_instance" {
+  default = true
+  type = bool
+}
