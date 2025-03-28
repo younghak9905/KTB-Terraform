@@ -28,7 +28,7 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://gitlab.example.com'
-        gitlab_rails['gitlab_shell_ssh_port'] = 22
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
         # 기본 루트 비밀번호 설정
         gitlab_rails['initial_root_password'] = 'password123'
         # 기본 이메일 설정 비활성화
@@ -36,7 +36,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
-      - '22:22'
+      - '2222:22'
     volumes:
       - '/srv/gitlab/config:/etc/gitlab'
       - '/srv/gitlab/logs:/var/log/gitlab'
