@@ -161,5 +161,5 @@ variable "key_name" {
 variable "shared_vpc_cidr" {
   description = "Shared VPC의 CIDR 블록"
   type        = string
-  default     = "10.3.0.0/16"
+  default     = "10.0.0.0/16"
 }
