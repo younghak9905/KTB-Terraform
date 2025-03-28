@@ -34,6 +34,13 @@ resource "aws_security_group" "sg_ecs" {
   }
 
   ingress {
+  from_port       = 8080
+  to_port         = 8080
+  protocol        = "TCP"
+  security_groups = [var.sg_alb_id]
+}
+
+  ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "TCP"
