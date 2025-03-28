@@ -61,8 +61,8 @@ cd /srv/gitlab
 docker-compose up -d
 
 # GitLab이 시작될 때까지 대기 (약 3분)
-echo "GitLab 서비스 시작 중... (3분 대기)"
-sleep 180
+echo "GitLab 서비스 시작 중... (5분 대기)"
+sleep 300
 
 # GitLab 접근 토큰 얻기
 GITLAB_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
