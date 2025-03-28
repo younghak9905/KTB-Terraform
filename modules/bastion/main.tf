@@ -62,7 +62,7 @@ resource "aws_security_group" "bastion_sg" {
   }
 
   tags = merge(
-    { Name = "aws-sg-${var.stage}-${var.servicename}-bastion" },
+    { Name = "sg-${var.stage}-${var.servicename}-bastion" },
     var.tags
   )
 
@@ -98,12 +98,12 @@ resource "aws_instance" "bastion" {
   })
 
   tags = merge(
-    { Name = "aws-ec2-${var.stage}-${var.servicename}-bastion" },
+    { Name = "ec2-${var.stage}-${var.servicename}-bastion" },
     var.tags
   )
 
   volume_tags = merge(
-    { Name = "aws-ebs-${var.stage}-${var.servicename}-bastion" },
+    { Name = "ebs-${var.stage}-${var.servicename}-bastion" },
     var.tags
   )
 
@@ -118,7 +118,7 @@ resource "aws_eip" "bastion" {
   domain   = "vpc"
   
   tags = merge(
-    { Name = "aws-eip-${var.stage}-${var.servicename}-bastion" },
+    { Name = "eip-${var.stage}-${var.servicename}-bastion" },
     var.tags
   )
 }

@@ -18,7 +18,7 @@ resource "aws_subnet" "public_az1" {
   map_public_ip_on_launch = false
   availability_zone       = element(var.az, 0)
   tags = merge(
-    { Name = "aws_subnet_${var.stage}_${var.servicename}_pub_az1" },
+    { Name = "subnet-${var.stage}-${var.servicename}-pub_az1" },
     var.tags
   )
   depends_on = [aws_vpc.main]
@@ -31,7 +31,7 @@ resource "aws_subnet" "public_az2" {
   map_public_ip_on_launch = false
   availability_zone       = element(var.az, 1)
   tags = merge(
-    { Name = "aws_subnet_${var.stage}_${var.servicename}_pub_az2" },
+    { Name = "subnet-${var.stage}-${var.servicename}-pub_az2" },
     var.tags
   )
   depends_on = [aws_vpc.main]
@@ -44,7 +44,7 @@ resource "aws_subnet" "service_az1" {
   map_public_ip_on_launch = false
   availability_zone       = element(var.az, 0)
   tags = merge(
-    { Name = "aws_subnet_${var.stage}_${var.servicename}_svc_az1" },
+    { Name = "subnet-${var.stage}-${var.servicename}-svc_az1" },
     var.tags
   )
   depends_on = [aws_vpc.main]
@@ -57,7 +57,7 @@ resource "aws_subnet" "service_az2" {
   map_public_ip_on_launch = false
   availability_zone       = element(var.az, 1)
   tags = merge(
-    { Name = "aws_subnet_${var.stage}_${var.servicename}_svc_az2" },
+    { Name = "subnet-${var.stage}-${var.servicename}-svc_az2" },
     var.tags
   )
   depends_on = [aws_vpc.main]
@@ -70,7 +70,7 @@ resource "aws_subnet" "db_az1" {
   map_public_ip_on_launch = false
   availability_zone       = element(var.az, 0)
   tags = merge(
-    { Name = "aws_subnet_${var.stage}_${var.servicename}_db_az1" },
+    { Name = "subnet-${var.stage}-${var.servicename}-db_az1" },
     var.tags
   )
   depends_on = [aws_vpc.main]
@@ -83,7 +83,7 @@ resource "aws_subnet" "db_az2" {
   map_public_ip_on_launch = false
   availability_zone       = element(var.az, 1)
   tags = merge(
-    { Name = "aws_subnet_${var.stage}_${var.servicename}_db_az2" },
+    { Name = "asubnet-${var.stage}-${var.servicename}-db_az2" },
     var.tags
   )
   depends_on = [aws_vpc.main]
@@ -93,7 +93,7 @@ resource "aws_subnet" "db_az2" {
 resource "aws_internet_gateway" "vpc_igw" {
   vpc_id = aws_vpc.main.id
   tags = merge(
-    { Name = "aws_igw_${var.stage}_${var.servicename}" },
+    { Name = "igw-${var.stage}-${var.servicename}" },
     var.tags
   )
 }
@@ -103,7 +103,7 @@ resource "aws_eip" "nat_eip" {
   domain     = "vpc"
   depends_on = [aws_internet_gateway.vpc_igw]
   tags = merge(
-    { Name = "aws_eip_${var.stage}_${var.servicename}_nat_1a" },
+    { Name = "eip-${var.stage}-${var.servicename}-nat_1a" },
     var.tags
   )
 }
@@ -124,7 +124,7 @@ resource "aws_nat_gateway" "vpc_nat" {
   subnet_id     = aws_subnet.public_az1.id
   depends_on    = [aws_internet_gateway.vpc_igw, aws_eip.nat_eip]
   tags = merge(
-    { Name = "aws_nat_${var.stage}_${var.servicename}_1a" },
+    { Name = "nat-${var.stage}-${var.servicename}_1a" },
     var.tags
   )
 }
@@ -144,7 +144,7 @@ resource "aws_nat_gateway" "vpc_nat" {
 resource "aws_route_table" "rt_pub" {
   vpc_id = aws_vpc.main.id
   tags = merge(
-    { Name = "aws_rt_${var.stage}_${var.servicename}_pub" },
+    { Name = "rt-${var.stage}-${var.servicename}-pub" },
     var.tags
   )
 }
@@ -164,7 +164,7 @@ resource "aws_route" "route_to_igw" {
 resource "aws_route_table" "rt_pri_1a" {
   vpc_id = aws_vpc.main.id
   tags = merge(
-    { Name = "aws_rt_${var.stage}_${var.servicename}_pri_1a" },
+    { Name = "rt-${var.stage}-${var.servicename}-pri_1a" },
     var.tags
   )
 }
@@ -173,7 +173,7 @@ resource "aws_route_table" "rt_pri_1a" {
 resource "aws_route_table" "rt_pri_1c" {
   vpc_id = aws_vpc.main.id
   tags = merge(
-    { Name = "aws_rt_${var.stage}_${var.servicename}_pri_1c" },
+    { Name = "rt-${var.stage}-${var.servicename}-pri_1c" },
     var.tags
   )
 }
@@ -196,7 +196,7 @@ resource "aws_route" "route_to_nat_1c" {
 resource "aws_route_table" "rt_db" {
   vpc_id = aws_vpc.main.id
   tags = merge(
-    { Name = "aws_rt_${var.stage}_${var.servicename}_db" },
+    { Name = "rt-${var.stage}-${var.servicename}-db" },
     var.tags
   )
 }

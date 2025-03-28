@@ -10,16 +10,6 @@ terraform {
   }
 }
 
-#
-#data "terraform_remote_state" "shared" {
-#  backend = "s3"
-#  config = {
-#    bucket         = "zero9905-terraformstate"
-#    key            = "shared/terraform/terraform.tfstate"
-#    region         = "us-east-2"
-#    dynamodb_table = "zero9905-terraformstate"
-#  }
-#}
 
 module "vpc" {
   source              = "../modules/vpc"
@@ -49,33 +39,6 @@ module "vpc" {
   #auto_accept_shared_attachments = true
   #security_attachments_propagation = merge(var.security_attachments_propagation, var.security_attachments)
 }
-/*
-module "zero9905-ec2" {
-  source              = "../modules/instance"
-
-  stage        = var.stage
-  servicename  = "${var.servicename}"
-  tags         = var.tags
-
-  ami                       = var.ami
-  instance_type             = var.instance_type
-  ebs_size                  = var.instance_ebs_size
-  user_data                 = <<-EOF
-#!/bin/bash 
-yum update -y 
-yum install -y https://s3.ap-northeast-2.amazonaws.com/amazon-ssm-ap-northeast-2/latest/linux_amd64/amazon-ssm-agent.rpm
-EOF
-  kms_key_id                = var.ebs_kms_key_id
-  ec2-iam-role-profile-name = module.iam-service-role.ec2-iam-role-profile.name
-  ssh_allow_comm_list       = [var.subnet_service_az1, var.subnet_service_az2]
-
-  associate_public_ip_address = var.associate_public_ip_address
-
-  subnet_id = module.vpc.public-az1.id
-  vpc_id    = module.vpc.vpc_id
-  sg_ec2_ids = [aws_security_group.sg-ec2.id]
-  depends_on = [module.vpc.sg-ec2-comm, module.iam-service-role.ec2-iam-role-profile]
-}*/
 
 
 # 주석 처리된 remote_state 부분 활성화
@@ -88,7 +51,7 @@ data "terraform_remote_state" "shared" {
     dynamodb_table = "zero9905-terraformstate"
   }
 }
-/*
+#/*
 # VPC 피어링 추가
 module "vpc_peering" {
   source = "../modules/vpc_peering"
@@ -152,7 +115,7 @@ resource "aws_security_group" "sg-ec2" {
     ignore_changes = [ingress]
   }
 }
-*/
+#*/
 module "alb" {
   source = "../modules/alb"
 
@@ -201,11 +164,11 @@ module "ecs" {
   desired_capacity            = 1
   min_size                    = 1
   max_size                    = 3
-  instance_name               = "terrafom-zero9905-ecs-instance"
+  instance_name               = "zero9905-ecs-instance"
   sg_alb_id = module.alb.sg_alb_id
   key_name = var.key_name
   # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
-  //shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
+  shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
 
   # ECS Task 변수
   task_family                 = "zero-task-family"
@@ -251,3 +214,32 @@ module "ecs" {
 #   kms_key_id = var.rds_kms_arn
 #   depends_on = [module.vpc]
 # }
+
+
+/*
+module "zero9905-ec2" {
+  source              = "../modules/instance"
+
+  stage        = var.stage
+  servicename  = "${var.servicename}"
+  tags         = var.tags
+
+  ami                       = var.ami
+  instance_type             = var.instance_type
+  ebs_size                  = var.instance_ebs_size
+  user_data                 = <<-EOF
+#!/bin/bash 
+yum update -y 
+yum install -y https://s3.ap-northeast-2.amazonaws.com/amazon-ssm-ap-northeast-2/latest/linux_amd64/amazon-ssm-agent.rpm
+EOF
+  kms_key_id                = var.ebs_kms_key_id
+  ec2-iam-role-profile-name = module.iam-service-role.ec2-iam-role-profile.name
+  ssh_allow_comm_list       = [var.subnet_service_az1, var.subnet_service_az2]
+
+  associate_public_ip_address = var.associate_public_ip_address
+
+  subnet_id = module.vpc.public-az1.id
+  vpc_id    = module.vpc.vpc_id
+  sg_ec2_ids = [aws_security_group.sg-ec2.id]
+  depends_on = [module.vpc.sg-ec2-comm, module.iam-service-role.ec2-iam-role-profile]
+}*/

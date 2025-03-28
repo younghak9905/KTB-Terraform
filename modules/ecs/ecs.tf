@@ -34,22 +34,12 @@ resource "aws_security_group" "sg_ecs" {
   }
 
   ingress {
-  from_port   = 22
-  to_port     = 22
-  protocol    = "TCP"
-  cidr_blocks = [var.shared_vpc_cidr]  # Shared VPC에서 오는 SSH 트래픽 허용
-  description = "SSH access from Shared VPC"
-}
-
-   # Bastion 서버에서 SSH 접속 허용
-  ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "TCP"
-    cidr_blocks = ["10.0.0.0/24"]
-    description     = "SSH access from Bastion"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "TCP"
+    cidr_blocks = [var.shared_vpc_cidr]  # Shared VPC에서 오는 SSH 트래픽 허용
+    description = "SSH access from Shared VPC"
   }
-
 
   egress {
     from_port   = 0
@@ -58,7 +48,7 @@ resource "aws_security_group" "sg_ecs" {
     cidr_blocks = ["0.0.0.0/0"] # 인터넷 접근 허용 (필요시 변경)
   }
 
-  tags = merge(var.tags, { "Name" = "sg-${var.cluster_name}-ecs" })
+  tags = merge(var.tags, { "Name" = "sg-${var.stage}-${var.cluster_name}-ecs" })
 }
 
 resource "aws_autoscaling_group" "ecs_instances" {
