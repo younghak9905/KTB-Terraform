@@ -20,12 +20,12 @@ resource "aws_instance" "ec2" {
   root_block_device {
           delete_on_termination = false
           encrypted = true
-          kms_key_id = var.kms_key_id
+        #  kms_key_id = var.kms_key_id
           volume_size = var.ebs_size
   }
   user_data = var.user_data
 
-  key_name = "aws-keypair-${var.stage}-${var.servicename}" 
+  key_name = var.key_name
 
   tags = merge(tomap({
          Name =  "aws-ec2-${var.stage}-${var.servicename}"}),

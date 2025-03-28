@@ -40,25 +40,13 @@ output "route_table_ids" {
     aws_route_table.prv_rt.id
   ]
 }
-/*
-
 # GitLab 출력
 output "gitlab_id" {
   description = "GitLab EC2 인스턴스 ID"
-  value       = module.gitlab.gitlab_id
-}
-
-output "gitlab_private_ip" {
-  description = "GitLab 서버의 프라이빗 IP 주소"
-  value       = module.gitlab.gitlab_private_ip
+  value       = module.gitlab_instance.instance_id
 }
 
 output "gitlab_security_group_id" {
   description = "GitLab 보안 그룹 ID"
-  value       = module.gitlab.gitlab_security_group_id
+  value       = aws_security_group.gitlab_sg.id
 }
-
-output "gitlab_data_volume_id" {
-  description = "GitLab 데이터 EBS 볼륨 ID"
-  value       = module.gitlab.data_volume_id
-}*/
