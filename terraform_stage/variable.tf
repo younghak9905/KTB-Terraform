@@ -170,3 +170,9 @@ variable "key_name" {
   #tfvars 파일에서 참조
 }
 
+variable "service_port" {
+  description = "서비스 포트"
+  type        = number
+  default     = 8080
+  
+}
