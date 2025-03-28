@@ -11,7 +11,7 @@ resource "aws_instance" "ec2" {
   ami                  = var.ami #"ami-0f2c95e9fe3f8f80e"
   instance_type        = var.instance_type #"c5.xlarge" "t2.micro"
   iam_instance_profile  = var.ec2-iam-role-profile-name
-  vpc_security_group_ids = concat(var.sg_ec2_ids, [aws_security_group.sg-ec2-comm.id])
+  vpc_security_group_ids = concat(var.sg_ec2_ids, [aws_security_group.sg-ec2-comm[0].id])
   subnet_id = var.subnet_id
   source_dest_check = !var.isPortForwarding
   credit_specification {
