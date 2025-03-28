@@ -181,8 +181,8 @@ module "ecs" {
 
   # ALB 연동 설정
   alb_target_group_arn  = module.alb.target_group_arn
-  container_name        = "nginx"  # container_definitions.json의 컨테이너 이름과 일치해야 함
-  container_port        = 80      # container_definitions.json의 포트와 일치해야 함
+  container_name        = "link2trip"  # container_definitions.json의 컨테이너 이름과 일치해야 함
+  container_port        = 8080      # container_definitions.json의 포트와 일치해야 함
 
   tags = {
     Environment = "stage"
