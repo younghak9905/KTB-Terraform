@@ -38,7 +38,6 @@ resource "aws_instance" "ec2" {
 
 #instance sg
 resource "aws_security_group" "sg-ec2-comm" {
-  name   = "sg-${var.stage}-${var.servicename}-ec2"
   vpc_id = local.vpc_id
   count  = var.create_instance ? 1 : 0
   
