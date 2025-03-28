@@ -11,16 +11,6 @@ terraform {
 }
 
 
-data "terraform_remote_state" "shared" {
-  backend = "s3"
-  config = {
-    bucket         = "zero9905-terraformstate"
-    key            = "shared/terraform/terraform.tfstate"
-    region         = "us-east-2"
-    dynamodb_table = "zero9905-terraformstate"
-  }
-}
-
 module "vpc" {
   source              = "../modules/vpc"
   stage               = var.stage
