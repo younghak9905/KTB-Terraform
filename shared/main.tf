@@ -37,7 +37,7 @@ module "bastion" {
 
 # GitLab 보안 그룹
 resource "aws_security_group" "gitlab_sg" {
-  name        = "sg-${var.stage}-${var.servicename}-gitlab"
+  name        = "sg_${var.stage}_${var.servicename}_gitlab"
   description = "Security group for GitLab and GitLab Runner"
   vpc_id      = aws_vpc.my_vpc.id
 
