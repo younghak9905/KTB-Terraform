@@ -159,6 +159,17 @@ echo "$(date "+%Y-%m-%d %H:%M:%S") - GitLab 접속 주소: http://${GITLAB_IP}" 
 echo "$(date "+%Y-%m-%d %H:%M:%S") - 로그인 ID: root" | tee -a ${LOG_FILE}
 echo "$(date "+%Y-%m-%d %H:%M:%S") - 비밀번호: password123" | tee -a ${LOG_FILE}
 
+
+INITIAL_PASSWORD_FILE="/etc/gitlab/initial_root_password"
+if [ -f "$INITIAL_PASSWORD_FILE" ]; then
+  # 초기 비밀번호 파일에서 "Password:"로 시작하는 첫 번째 줄만 추출
+  INITIAL_PASSWORD=$(sudo cat $INITIAL_PASSWORD_FILE | grep "Password:" | head -n 1)
+  echo "$(date "+%Y-%m-%d %H:%M:%S") - $INITIAL_PASSWORD" | tee -a ${LOG_FILE}
+else
+  # 파일이 없으면 메시지 표시
+  echo "$(date "+%Y-%m-%d %H:%M:%S") - 비밀번호: (초기 비밀번호 파일을 찾을 수 없습니다)" | tee -a ${LOG_FILE}
+fi
+
 # 모든 사용자에게 설치 완료 메시지 표시
 cat << EOF > /etc/motd
 ===================================================
@@ -166,7 +177,7 @@ cat << EOF > /etc/motd
  
  GitLab 접속 주소: http://${GITLAB_IP}
  로그인 ID: root
- 비밀번호: password123
+ 비밀번호: ${INITIAL_PASSWORD}
  
  설치 로그: ${LOG_FILE}
 ===================================================

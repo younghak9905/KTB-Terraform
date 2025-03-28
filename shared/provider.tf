@@ -27,7 +27,7 @@ variable "stage" {
 variable "servicename" {
   description = "서비스 이름"
   type        = string
-  default     = "terraform_zero9905"
+  default     = "zero9905"
 }
 
 # VPC 생성
@@ -50,7 +50,7 @@ resource "aws_subnet" "pub_subnet_1a" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "aws-subnet-${var.stage}-${var.servicename}-public-2a"
+    Name = "subnet-${var.stage}-${var.servicename}-pub_2a"
   }
 }
 
@@ -61,7 +61,7 @@ resource "aws_subnet" "prv_sub_1a" {
   availability_zone = "us-east-2a"
 
   tags = {
-    Name = "aws-subnet-${var.stage}-${var.servicename}-private-2a"
+    Name = "subnet-${var.stage}-${var.servicename}-prv_2a"
   }
 }
 
@@ -70,7 +70,7 @@ resource "aws_internet_gateway" "my_igw" {
   vpc_id = aws_vpc.my_vpc.id
 
   tags = {
-    Name = "aws-igw-${var.stage}-${var.servicename}"
+    Name = "igw-${var.stage}-${var.servicename}"
   }
 }
 
@@ -79,7 +79,7 @@ resource "aws_route_table" "pub_rt" {
   vpc_id = aws_vpc.my_vpc.id
 
   tags = {
-    Name = "aws-rt-${var.stage}-${var.servicename}-public"
+    Name = "rt-${var.stage}-${var.servicename}-pub"
   }
 }
 
@@ -95,7 +95,7 @@ resource "aws_eip" "nat_eip" {
   domain = "vpc"
 
   tags = {
-    Name = "aws-eip-${var.stage}-${var.servicename}-nat"
+    Name = "eip-${var.stage}-${var.servicename}-nat"
   }
   depends_on = [aws_internet_gateway.my_igw]
 }
@@ -106,7 +106,7 @@ resource "aws_nat_gateway" "nat_gw" {
   subnet_id     = aws_subnet.pub_subnet_1a.id
 
   tags = {
-    Name = "aws-nat-${var.stage}-${var.servicename}"
+    Name = "nat-${var.stage}-${var.servicename}"
   }
   depends_on = [aws_internet_gateway.my_igw]
 }
@@ -116,7 +116,7 @@ resource "aws_route_table" "prv_rt" {
   vpc_id = aws_vpc.my_vpc.id
 
   tags = {
-    Name = "aws-rt-${var.stage}-${var.servicename}-private"
+    Name = "rt-${var.stage}-${var.servicename}-prv"
   }
 }
 

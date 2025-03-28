@@ -201,7 +201,7 @@ module "ecs" {
   desired_capacity            = 1
   min_size                    = 1
   max_size                    = 3
-  instance_name               = "terrafom-zero9905-ecs-instance"
+  instance_name               = "zero9905-ecs-instance"
   sg_alb_id = module.alb.sg_alb_id
   key_name = var.key_name
   # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
