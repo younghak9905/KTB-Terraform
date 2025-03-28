@@ -13,13 +13,10 @@ resource "aws_vpc_peering_connection" "peer" {
 
 # 요청자 VPC 라우팅 테이블에 수락자 VPC CIDR로 향하는 트래픽을 피어링 연결로 라우팅
 resource "aws_route" "requester_to_accepter" {
-  for_each = {
-    for idx, rtb_id in var.requester_route_table_ids : rtb_id => var.accepter_cidr_block
-    if var.enable_route_creation # 선택적으로 라우트 생성을 제어하는 변수
-  }
+  count = var.enable_route_creation ? length(var.requester_route_table_ids) : 0
   
-  route_table_id            = each.key
-  destination_cidr_block    = each.value
+  route_table_id            = var.requester_route_table_ids[count.index]
+  destination_cidr_block    = var.accepter_cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.peer.id
   
   # 라우트가 이미 존재할 경우 무시
@@ -30,13 +27,10 @@ resource "aws_route" "requester_to_accepter" {
 
 # 수락자 VPC 라우팅 테이블에 요청자 VPC CIDR로 향하는 트래픽을 피어링 연결로 라우팅
 resource "aws_route" "accepter_to_requester" {
-  for_each = {
-    for idx, rtb_id in var.accepter_route_table_ids : rtb_id => var.requester_cidr_block
-    if var.enable_route_creation # 선택적으로 라우트 생성을 제어하는 변수
-  }
+  count = var.enable_route_creation ? length(var.accepter_route_table_ids) : 0
   
-  route_table_id            = each.key
-  destination_cidr_block    = each.value
+  route_table_id            = var.accepter_route_table_ids[count.index]
+  destination_cidr_block    = var.requester_cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.peer.id
   
   # 라우트가 이미 존재할 경우 무시

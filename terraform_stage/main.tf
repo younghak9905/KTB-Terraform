@@ -134,7 +134,7 @@ module "alb" {
 
   # Target Group 설정
   target_type           = "instance"
-  port                  = 80
+  port                  = var.service_port
   hc_path               = "/"
   hc_healthy_threshold  = 5
   hc_unhealthy_threshold = 2
@@ -182,7 +182,7 @@ module "ecs" {
   # ALB 연동 설정
   alb_target_group_arn  = module.alb.target_group_arn
   container_name        = "link2trip"  # container_definitions.json의 컨테이너 이름과 일치해야 함
-  container_port        = 8080      # container_definitions.json의 포트와 일치해야 함
+  container_port        = var.service_port     # container_definitions.json의 포트와 일치해야 함
 
   tags = {
     Environment = "stage"
