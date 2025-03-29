@@ -39,9 +39,9 @@ variable "user_data" {
   type = string
   default = ""
 }
-variable "kms_key_id" {
-  type = string
-}
+#variable "kms_key_id" {
+#  type = string
+#}
 variable "ec2-iam-role-profile-name" {
   type = string
 }
@@ -55,4 +55,15 @@ variable "isPortForwarding" {
 }
 variable "ssh_allow_comm_list" {
   type = list(any)
+}
+
+variable "key_name" {
+  type = string
+  default = "0317"
+  
+}
+
+variable "create_instance" {
+  default = true
+  type = bool
 }

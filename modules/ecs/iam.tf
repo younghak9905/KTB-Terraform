@@ -14,6 +14,15 @@ resource "aws_iam_role" "ecs_instance_role" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_ssm_policy_attach" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+
+
+
+
 resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy" {
   role       = aws_iam_role.ecs_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"

@@ -11,7 +11,7 @@ resource "aws_instance" "ec2" {
   ami                  = var.ami #"ami-0f2c95e9fe3f8f80e"
   instance_type        = var.instance_type #"c5.xlarge" "t2.micro"
   iam_instance_profile  = var.ec2-iam-role-profile-name
-  vpc_security_group_ids = concat(var.sg_ec2_ids, [aws_security_group.sg-ec2-comm.id])
+  vpc_security_group_ids = concat(var.sg_ec2_ids, [aws_security_group.sg-ec2-comm[0].id])
   subnet_id = var.subnet_id
   source_dest_check = !var.isPortForwarding
   credit_specification {
@@ -20,15 +20,15 @@ resource "aws_instance" "ec2" {
   root_block_device {
           delete_on_termination = false
           encrypted = true
-          kms_key_id = var.kms_key_id
+        #  kms_key_id = var.kms_key_id
           volume_size = var.ebs_size
   }
   user_data = var.user_data
 
-  key_name = "aws-keypair-${var.stage}-${var.servicename}" 
+  key_name = var.key_name
 
   tags = merge(tomap({
-         Name =  "aws-ec2-${var.stage}-${var.servicename}"}),
+         Name =  "ec2-${var.stage}-${var.servicename}"}),
         var.tags)
 
   lifecycle {
@@ -38,9 +38,9 @@ resource "aws_instance" "ec2" {
 
 #instance sg
 resource "aws_security_group" "sg-ec2-comm" {
-  name   = "aws-sg-${var.stage}-${var.servicename}-ec2"
   vpc_id = local.vpc_id
-
+  count  = var.create_instance ? 1 : 0
+  
   ingress {
     from_port   = 22
     to_port     = 22
@@ -56,6 +56,6 @@ resource "aws_security_group" "sg-ec2-comm" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = merge(tomap({
-         Name = "aws-sg-${var.stage}-${var.servicename}-ec2"}), 
+         Name = "sg-${var.stage}-${var.servicename}-ec2"}), 
         var.tags)
 }

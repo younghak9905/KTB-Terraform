@@ -3,9 +3,10 @@ name: 'Shared Infrastructure CI/CD'
 on:
   push:
     branches:
-      - main
       - 'feature/**'
-     
+    paths:
+      - 'shared/**'
+      - 'modules/bastion/**'
   pull_request:
     branches:
       - main
@@ -17,7 +18,7 @@ on:
       action:
         description: '수행할 작업 (plan, apply, destroy)'
         required: true
-        default: 'plan'
+        default: 'apply'
         type: choice
         options:
           - plan
@@ -88,13 +89,13 @@ jobs:
         id: validate
         run: terraform validate
 
+      # Plan 단계 - 모든 경우에 실행
       - name: Terraform Plan
         id: plan
-        if: >
-          github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
+        if: github.event.inputs.action != 'destroy'
         run: terraform plan -input=false -parallelism=10 -out=tfplan
 
+      # PR에 대한 Plan 결과 표시
       - name: Terraform Plan (PR)
         id: plan_pr
         if: github.event_name == 'pull_request'
@@ -129,23 +130,34 @@ jobs:
               body: output
             })
 
+      # Apply 단계 - main 브랜치나 feature/ 브랜치 푸시 또는 수동 workflow에서 'apply' 선택 시 실행
       - name: Terraform Apply
-        if: >
-          (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+        if: |
+          ((github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/feature/')) && github.event_name == 'push') || 
           (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
         run: terraform apply -auto-approve tfplan
 
+      # Destroy 단계 - 수동 workflow에서 'destroy' 선택 및 확인 문자 입력 시 실행
       - name: Terraform Destroy
-        if: >
-          github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.action == 'destroy' &&
+        if: |
+          github.event_name == 'workflow_dispatch' && 
+          github.event.inputs.action == 'destroy' && 
           github.event.inputs.confirm_destroy == 'DESTROY'
-        run: terraform destroy -auto-approve
+        run: |
+          terraform init -reconfigure \
+            -backend-config="region=us-east-2" \
+            -backend-config="bucket=zero9905-terraformstate" \
+            -backend-config="key=shared/terraform/terraform.tfstate" \
+            -backend-config="dynamodb_table=zero9905-terraformstate" \
+            -lock-timeout=300s
 
+          terraform destroy -auto-approve
+
+      # Destroy 확인 실패 시 에러 메시지
       - name: Destroy Confirmation Failed
-        if: >
-          github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.action == 'destroy' &&
+        if: |
+          github.event_name == 'workflow_dispatch' && 
+          github.event.inputs.action == 'destroy' && 
           github.event.inputs.confirm_destroy != 'DESTROY'
         run: |
           echo "::error::인프라 삭제를 위해서는 confirm_destroy 필드에 'DESTROY'를 정확히 입력해야 합니다."

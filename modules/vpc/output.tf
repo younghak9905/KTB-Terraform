@@ -44,3 +44,8 @@ output "nat_id" {
 output "private_route_table_ids" {
   value = [aws_route_table.rt_pri_1a.id, aws_route_table.rt_pri_1c.id]
 }
+
+output "public_route_table_id" {
+  value = aws_route_table.rt_pub.id
+  
+}

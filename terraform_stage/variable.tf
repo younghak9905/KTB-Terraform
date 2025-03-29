@@ -8,7 +8,7 @@ variable "stage" {
 }
 variable "servicename" {
   type = string
-  default = "terraform_zero9905"
+  default = "zero9905"
 }
 variable "tags" {
   type = map(string)
@@ -161,3 +161,18 @@ variable "create_ecs" {
   default = true
 }
 
+
+# 공통 변수
+variable "key_name" {
+  description = "EC2 인스턴스의 SSH 키 이름"
+  type        = string
+  default = "0317"
+  #tfvars 파일에서 참조
+}
+
+variable "service_port" {
+  description = "서비스 포트"
+  type        = number
+  default     = 80
+  
+}

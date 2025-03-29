@@ -7,22 +7,18 @@ resource "aws_launch_template" "ecs_instance_lt" {
   name_prefix   = "${var.cluster_name}-cluster"
   image_id      = var.ami_id
   instance_type = var.instance_type
-
+  key_name = var.key_name
+  user_data = base64encode(templatefile("${path.module}/scripts/user_data.sh.tpl", {
+  ecs_cluster_name = aws_ecs_cluster.this.name
+}))
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs_instance_profile.name
   }
-
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    echo ECS_CLUSTER=${aws_ecs_cluster.this.name} >> /etc/ecs/ecs.config
-  EOF
-  )
 
   vpc_security_group_ids = [aws_security_group.sg_ecs[0].id]
 
   # 필요 시 추가 설정 (예: key_name, block_device_mappings 등) 추가
 }
-
 
 resource "aws_security_group" "sg_ecs" {
   count  = var.create_ecs ? 1 : 0
@@ -37,6 +33,21 @@ resource "aws_security_group" "sg_ecs" {
     security_groups = [var.sg_alb_id] # ALB에서 오는 트래픽만 허용
   }
 
+  ingress {
+  from_port       = 8080
+  to_port         = 8080
+  protocol        = "TCP"
+  security_groups = [var.sg_alb_id]
+}
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "TCP"
+    cidr_blocks = [var.shared_vpc_cidr]  # Shared VPC에서 오는 SSH 트래픽 허용
+    description = "SSH access from Shared VPC"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -44,7 +55,7 @@ resource "aws_security_group" "sg_ecs" {
     cidr_blocks = ["0.0.0.0/0"] # 인터넷 접근 허용 (필요시 변경)
   }
 
-  tags = merge(var.tags, { "Name" = "sg-${var.cluster_name}-ecs" })
+  tags = merge(var.tags, { "Name" = "sg-${var.stage}-${var.cluster_name}-ecs" })
 }
 
 resource "aws_autoscaling_group" "ecs_instances" {

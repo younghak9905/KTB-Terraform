@@ -10,6 +10,7 @@ terraform {
   }
 }
 
+
 module "vpc" {
   source              = "../modules/vpc"
   stage               = var.stage
@@ -38,33 +39,40 @@ module "vpc" {
   #auto_accept_shared_attachments = true
   #security_attachments_propagation = merge(var.security_attachments_propagation, var.security_attachments)
 }
-/*
-module "zero9905-ec2" {
-  source              = "../modules/instance"
 
-  stage        = var.stage
-  servicename  = "${var.servicename}"
-  tags         = var.tags
 
-  ami                       = var.ami
-  instance_type             = var.instance_type
-  ebs_size                  = var.instance_ebs_size
-  user_data                 = <<-EOF
-#!/bin/bash 
-yum update -y 
-yum install -y https://s3.ap-northeast-2.amazonaws.com/amazon-ssm-ap-northeast-2/latest/linux_amd64/amazon-ssm-agent.rpm
-EOF
-  kms_key_id                = var.ebs_kms_key_id
-  ec2-iam-role-profile-name = module.iam-service-role.ec2-iam-role-profile.name
-  ssh_allow_comm_list       = [var.subnet_service_az1, var.subnet_service_az2]
+# 주석 처리된 remote_state 부분 활성화
+data "terraform_remote_state" "shared" {
+  backend = "s3"
+  config = {
+    bucket         = "zero9905-terraformstate"
+    key            = "shared/terraform/terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "zero9905-terraformstate"
+  }
+}
+#/*
+# VPC 피어링 추가
+module "vpc_peering" {
+  source = "../modules/vpc_peering"
 
-  associate_public_ip_address = var.associate_public_ip_address
+  requester_vpc_id         = module.vpc.vpc_id
+  accepter_vpc_id          = data.terraform_remote_state.shared.outputs.vpc_id
+  requester_cidr_block     = var.vpc_ip_range
+  accepter_cidr_block      = data.terraform_remote_state.shared.outputs.vpc_cidr
+  requester_route_table_ids = concat(
+    [module.vpc.public_route_table_id],
+    module.vpc.private_route_table_ids
+  )
+  accepter_route_table_ids = data.terraform_remote_state.shared.outputs.route_table_ids
+  requester_name           = "${var.stage}-${var.servicename}"
+  accepter_name            = "shared-infrastructure"
+  auto_accept              = true
+  
+  tags = var.tags
 
-  subnet_id = module.vpc.public-az1.id
-  vpc_id    = module.vpc.vpc_id
-  sg_ec2_ids = [aws_security_group.sg-ec2.id]
-  depends_on = [module.vpc.sg-ec2-comm, module.iam-service-role.ec2-iam-role-profile]
-}*/
+  enable_route_creation = true
+}
 
 resource "aws_security_group" "sg-ec2" {
   count = var.create_ec2 ? 1 : 0
@@ -107,7 +115,7 @@ resource "aws_security_group" "sg-ec2" {
     ignore_changes = [ingress]
   }
 }
-
+#*/
 module "alb" {
   source = "../modules/alb"
 
@@ -126,7 +134,7 @@ module "alb" {
 
   # Target Group 설정
   target_type           = "instance"
-  port                  = 80
+  port                  = var.service_port
   hc_path               = "/"
   hc_healthy_threshold  = 5
   hc_unhealthy_threshold = 2
@@ -149,18 +157,21 @@ module "ecs" {
   source = "../modules/ecs"
   vpc_id = module.vpc.vpc_id
   cluster_name                = "terraform-zero9905-ecs-cluster"
-  ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
+  ami_id    = "ami-059601b8419c53014"  # ECS 최적화 AMI ID
   instance_type = "t3.micro"
   subnet_ids    = [module.vpc.service_az1, module.vpc.service_az2]
   associate_public_ip_address = true
-  desired_capacity            = 2
+  desired_capacity            = 1
   min_size                    = 1
   max_size                    = 3
-  instance_name               = "terrafom-zero9905-ecs-instance"
+  instance_name               = "zero9905-ecs-instance"
   sg_alb_id = module.alb.sg_alb_id
+  key_name = var.key_name
+  # Bastion 보안 그룹 ID 추가 (shared 디렉토리에서 Bastion 서버를 배포한 후 출력값을 사용)
+  shared_vpc_cidr = data.terraform_remote_state.shared.outputs.vpc_cidr
 
   # ECS Task 변수
-  task_family                 = "my-task-family"
+  task_family                 = "zero-task-family"
   task_network_mode           = "bridge"
   container_definitions       = file("./container_definitions.json")
   task_cpu                    = "256"
@@ -170,8 +181,8 @@ module "ecs" {
 
   # ALB 연동 설정
   alb_target_group_arn  = module.alb.target_group_arn
-  container_name        = "nginx"  # container_definitions.json의 컨테이너 이름과 일치해야 함
-  container_port        = 80      # container_definitions.json의 포트와 일치해야 함
+  container_name        = "link2trip"  # container_definitions.json의 컨테이너 이름과 일치해야 함
+  container_port        = var.service_port     # container_definitions.json의 포트와 일치해야 함
 
   tags = {
     Environment = "stage"
@@ -181,55 +192,6 @@ module "ecs" {
 }
 
 
-/*
-module "asg" {
-  source                      = "../modules/asg"
-  asg_name                    = "my_ecs_asg"
-  desired_capacity            = 2
-  min_size                    = 1
-  max_size                    = 3
-  launch_template_id          = module.ecs_ec2.launch_template_id
-  launch_template_version     = module.ecs_ec2.launch_template_version
-  subnet_ids                  = [var.subnet_service_az1,var.subnet_service_az2]  # 대상 서브넷 ID 리스트
-  health_check_type           = "EC2"
-  health_check_grace_period   = 300
-  instance_name               = var.servicename
-  tags                        = { Environment = "stage", Project = "myproject",Type="asg" }
-  stage                       = var.stage    
-  servicename                 = var.servicename  
-}
-
-module "ecs_ec2" {
-  source      = "../modules/ecs_ec2"
-  prefix_name = "terraform-zero9905-ecs"
-  cluster_name  = "my-ecs-cluster"
-  ecs_ami_id    = "ami-05716d7e60b53d380"  # ECS 최적화 AMI ID
-  instance_type = "t3.micro"
-  key_name      = "my-key"
-  #user_data     = "#!/bin/bash\nyum update -y"
-  instance_name = var.servicename
-  tags          = { Environment = "stage", Project = "myproject", Type = "ecs-ec2" }
-  vpc_id        = module.vpc.vpc_id
-  region        = var.region
-  subnet_ids    = [var.subnet_service_az1, var.subnet_service_az2]
-  stage         = var.stage
-  servicename   = var.servicename 
-
-  # ALB 관련 값 전달 (ALB 모듈의 출력값 사용)
-  alb_target_group_arn  = module.alb.target_group_arn
-  alb_listener_arn      = module.alb.listener_arn
-  sg_list               = [module.alb.sg_alb_id]  # ✅ 수정: module.alb.sg_alb_id로 변경
-
-  #컨테이너 관련 설정
-  container_name = "my-container"
-  container_port = 80
-  container_image = "nginx:latest"
-
-
-
-}
-
-*/
 #RDS
 # module "rds" {
 #   #default engin aurora-mysql8.0
@@ -252,3 +214,32 @@ module "ecs_ec2" {
 #   kms_key_id = var.rds_kms_arn
 #   depends_on = [module.vpc]
 # }
+
+
+/*
+module "zero9905-ec2" {
+  source              = "../modules/instance"
+
+  stage        = var.stage
+  servicename  = "${var.servicename}"
+  tags         = var.tags
+
+  ami                       = var.ami
+  instance_type             = var.instance_type
+  ebs_size                  = var.instance_ebs_size
+  user_data                 = <<-EOF
+#!/bin/bash 
+yum update -y 
+yum install -y https://s3.ap-northeast-2.amazonaws.com/amazon-ssm-ap-northeast-2/latest/linux_amd64/amazon-ssm-agent.rpm
+EOF
+  kms_key_id                = var.ebs_kms_key_id
+  ec2-iam-role-profile-name = module.iam-service-role.ec2-iam-role-profile.name
+  ssh_allow_comm_list       = [var.subnet_service_az1, var.subnet_service_az2]
+
+  associate_public_ip_address = var.associate_public_ip_address
+
+  subnet_id = module.vpc.public-az1.id
+  vpc_id    = module.vpc.vpc_id
+  sg_ec2_ids = [aws_security_group.sg-ec2.id]
+  depends_on = [module.vpc.sg-ec2-comm, module.iam-service-role.ec2-iam-role-profile]
+}*/

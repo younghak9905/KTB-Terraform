@@ -1,7 +1,7 @@
 [
   {
-    "name": "nginx",
-    "image": "nginx:latest",
+    "name": "link2trip",
+    "image": "nginx",
     "cpu": 256,
     "memory": 512,
     "essential": true,
@@ -17,7 +17,7 @@
       "options": {
         "awslogs-group": "/ecs/terraform-zero9905",
         "awslogs-region": "us-east-2",
-        "awslogs-stream-prefix": "nginx"
+        "awslogs-stream-prefix": "link2trip"
       }
     },
     "healthCheck": {

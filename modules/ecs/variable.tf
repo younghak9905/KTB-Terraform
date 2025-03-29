@@ -3,6 +3,13 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "stage" {
+  description = "환경 스테이지 (예: dev, prod)"
+  type        = string
+  default = "stage"
+  
+}
+
 variable "instance_type" {
   description = "ECS 컨테이너 인스턴스의 EC2 인스턴스 타입"
   type        = string
@@ -144,4 +151,15 @@ variable "vpc_id" {
 variable "sg_alb_id" {
   description = "value of the security group id"
   type = string
+}
+
+variable "key_name" {
+  description = "key name"
+  type = string
+}
+
+variable "shared_vpc_cidr" {
+  description = "Shared VPC의 CIDR 블록"
+  type        = string
+  default     = "10.0.0.0/16"
 }

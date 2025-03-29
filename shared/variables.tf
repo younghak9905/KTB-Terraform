@@ -20,19 +20,19 @@ variable "tags" {
 variable "vpc_cidr_block" {
   description = "VPC의 CIDR 블록"
   type        = string
-  default     = "10.3.0.0/16"  # 기존 VPC(10.2.92.0/24)보다 더 큰 주소 공간
+  default = "aws_vpc.my_vpc.cidr_block"
 }
 
 variable "public_subnet_cidr" {
   description = "퍼블릭 서브넷의 CIDR 블록"
   type        = string
-  default     = "10.3.0.0/24"
+  default     = "aws_subnet.pub_subnet_1a.cidr_block"
 }
 
 variable "private_subnet_cidr" {
   description = "프라이빗 서브넷의 CIDR 블록"
   type        = string
-  default     = "10.3.1.0/24"
+  default     = "aws_subnet.prv_sub_1a.cidr_block"
 }
 
 variable "availability_zone" {

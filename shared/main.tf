@@ -34,32 +34,77 @@ module "bastion" {
   # IAM 인스턴스 프로파일 (SSM과 기타 필요한 권한)
   instance_profile = module.iam_role.ec2-iam-role-profile.name
 }
-/*
 
-# GitLab 서버 배포
-module "gitlab" {
-  source = "../modules/gitlab"
+# GitLab 보안 그룹
+resource "aws_security_group" "gitlab_sg" {
+  name        = "sg_${var.stage}_${var.servicename}_gitlab"
+  description = "Security group for GitLab and GitLab Runner"
+  vpc_id      = aws_vpc.my_vpc.id
+
+  # SSH 접속
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    security_groups = [module.bastion.bastion_security_group_id]
+    description = "SSH from allowed IPs"
+  }
+
+  # HTTP 접속
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.my_vpc.cidr_block]
+    description = "HTTP access"
+  }
+
+  # HTTPS 접속
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.my_vpc.cidr_block]
+    description = "HTTPS access"
+  }
+
+  # 아웃바운드 트래픽 허용
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
+  }
+
+  tags = {
+    Name = "sg-${var.stage}-${var.servicename}-gitlab"
+  }
+}
+
+# GitLab 인스턴스 - instance 모듈 사용
+module "gitlab_instance" {
+  source = "../modules/instance"
 
   stage             = var.stage
   servicename       = "${var.servicename}-gitlab"
-  vpc_id            = aws_vpc.my_vpc.id
+  ami               = "ami-05716d7e60b53d380"  # Amazon Linux 2
+  instance_type     = "c5.xlarge"
   subnet_id         = aws_subnet.prv_sub_1a.id
-  availability_zone = var.availability_zone
-  ami_id            = var.gitlab_ami_id
-  instance_type     = var.gitlab_instance_type
-  key_name          = var.key_name
+  sg_ec2_ids        = [aws_security_group.gitlab_sg.id]
+  ebs_size          = 50
+  #kms_key_id        = var.kms_key_id
+  ec2-iam-role-profile-name = module.iam_role.ec2-iam-role-profile.name
   
-  # 데이터 볼륨 크기 설정
-  root_volume_size = 30
-  data_volume_size = 100
-  
-  # 보안 그룹 설정
-  bastion_sg_id = module.bastion.bastion_security_group_id
-  http_sg_list  = [module.bastion.bastion_security_group_id]
-  https_sg_list = [module.bastion.bastion_security_group_id]
-  
-  # IAM 인스턴스 프로파일
-  instance_profile = module.iam_role.ec2-iam-role-profile.name
+  # user_data 스크립트 파일 로드
+  user_data = file("${path.module}/scripts/gitlab.sh")
+
+  # SSH 허용 목록
+  ssh_allow_comm_list = []
+
+  # 태그
+  tags = {
+    Name = "ec2-${var.stage}-${var.servicename}-gitlab"
+  }
 }
-*/
 
