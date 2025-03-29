@@ -2,12 +2,63 @@
 
 ## 📖 개요
 
-이 Terraform 프로젝트는 AWS 인프라를 IaC(Infrastructure as Code) 방식으로 관리하며, **다중 계정 구조**로 설계되어 있습니다.
+이 Terraform 프로젝트는 AWS 인프라를 **IaC (Infrastructure as Code)** 방식으로 관리하며, **다중 계정 기반의 환경 분리와 CI/CD 자동화**를 중심으로 구성되어 있습니다.  
+각 계정은 고유한 역할을 수행하며, 서로 명확히 격리된 리소스 환경을 운영합니다.
 
-- **Shared 계정**: 개발 도구, VPN, GitLab 등 공통 인프라
-- **Stage 계정**: 스테이징 환경 애플리케이션 인프라 (ECS, ALB, RDS 등)
+### ✅ 계정별 구성
+
+- **Shared 계정**
+  - OpenVPN 서버 (Bastion)
+  - GitLab (Self-hosted)
+  - 공통 ECR, S3 저장소
+  - 공통 IAM 및 로깅 리소스 관리
+
+- **Dev 계정**
+  - 개발용 ECS 클러스터
+  - 개발 환경용 RDS, ALB 구성
+  - 프론트엔드/백엔드 테스트 배포 환경
+
+- **Stage 계정**
+  - 사전 검증 및 테스트용 ECS 인프라
+  - 실제 운영 환경에 가까운 구성
+  - Auto Scaling + RDS Read Replica 구성
+
+- **Prod 계정**
+  - 운영용 ECS 클러스터
+  - 고가용성 구성 및 다중 AZ 트래픽 분산
+  - CloudFront + Route53 + S3 정적 배포 환경
 
 ---
+
+### 🚀 CI/CD 파이프라인 통합
+
+- **GitLab (BE/FE) → ECR → ECS 배포 자동화**
+  - GitLab CI/CD를 통해 Docker 이미지를 빌드하고 ECR에 푸시
+  - ECS 서비스에서 해당 이미지를 Pull하여 자동 배포 (`update-service`)
+  - 브랜치 기반 환경 분기: `feature/`, `stage/`, `main` 구분
+
+- **정적 FE 배포 (GitLab → S3 → CloudFront)**
+  - 프론트엔드 정적 자산을 S3에 업로드
+  - CloudFront를 통해 글로벌 CDN 배포
+  - 변경 시 자동 캐시 무효화 처리 포함
+
+---
+
+### 📊 로깅 및 모니터링
+
+- **CloudWatch Logs**
+  - ECS 컨테이너 로그를 CloudWatch로 수집
+  - Log Group 및 Stream 별 관리
+  - 알람, 지표 기반 운영 지원
+
+- **CloudWatch Metrics**
+  - Auto Scaling, ECS CPU/Memory 모니터링
+  - RDS, ALB, NAT Gateway 등 주요 컴포넌트 지표 확인 가능
+
+---
+
+이 인프라는 GitOps 기반의 자동화된 개발/운영 파이프라인과, 명확히 분리된 계정 구조를 바탕으로 **보안성, 확장성, 운영 편의성**을 모두 고려하여 설계되었습니다.
+
 
 ## 🗺️ KTB 전체 아키텍처 다이어그램
 
@@ -104,7 +155,7 @@
 
 ---
 
-### 5️⃣ CI/CD 파이프라인
+### 5️⃣Terraform CI/CD 파이프라인
 - **GitHub Actions** 기반 자동화 배포
 - `.github/workflows/stage-terraform.yml` 사용
 - 환경별 브랜치 전략: `feature/`, `stage/`, `main`
