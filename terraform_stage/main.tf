@@ -1,12 +1,12 @@
 terraform {
- required_version = ">= 1.0.0, < 2.0.0"
+  required_version = ">= 1.0.0, < 2.0.0"
 
-  backend "s3" {
-    bucket = "zero9905-terraformstate"
-    key  = "stage/terraform/terraform.tfstate"
-    region = "us-east-2"
-    encrypt = true
-    dynamodb_table = "zero9905-terraformstate"
+  cloud {
+    organization = "ktb-terraform"
+    
+    workspaces {
+      name = "stage-infrastructure"
+    }
   }
 }
 
@@ -41,14 +41,14 @@ module "vpc" {
 }
 
 
-# 주석 처리된 remote_state 부분 활성화
+# Shared 인프라 상태 참조 (Terraform Cloud)
 data "terraform_remote_state" "shared" {
-  backend = "s3"
+  backend = "remote"
   config = {
-    bucket         = "zero9905-terraformstate"
-    key            = "shared/terraform/terraform.tfstate"
-    region         = "us-east-2"
-    dynamodb_table = "zero9905-terraformstate"
+    organization = "ktb-terraform"
+    workspaces = {
+      name = "shared-infrastructure"
+    }
   }
 }
 #/*
