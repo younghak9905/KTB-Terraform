@@ -4,12 +4,12 @@
 terraform {
   required_version = ">= 1.0.0, < 2.0.0"
 
-  backend "s3" {
-    bucket = "zero9905-terraformstate"
-    key    = "shared/terraform/terraform.tfstate"
-    region = "us-east-2"
-    encrypt = true
-    dynamodb_table = "zero9905-terraformstate"
+  cloud {
+    organization = "ktb-terraform"
+    
+    workspaces {
+      name = "shared-infrastructure"
+    }
   }
 }
 

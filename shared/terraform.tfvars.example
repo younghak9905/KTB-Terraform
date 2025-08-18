@@ -1,0 +1,22 @@
+# Terraform Cloud Variables 예시
+# 실제 값은 Terraform Cloud Workspace에서 설정
+
+stage = "shared"
+servicename = "ktb"
+vpc_main_cidr = "10.0.0.0/23"
+key_name = "0317"
+
+# 보안 관련 (Terraform Cloud에서 Sensitive로 설정)
+# AWS_ACCESS_KEY_ID = "AKIA..."
+# AWS_SECRET_ACCESS_KEY = "..."
+# AWS_DEFAULT_REGION = "us-east-2"
+
+# 선택적 변수들
+ssh_allow_cidr_blocks = ["0.0.0.0/0"]
+admin_cidr_blocks = ["0.0.0.0/0"]
+
+tags = {
+  "Project"     = "architecture"
+  "Owner"       = "zero"
+  "Environment" = "shared"
+}

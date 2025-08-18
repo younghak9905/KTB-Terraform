@@ -3,3 +3,13 @@ aws-mfa-script/
 .DS_Store
 error
 *.tfvars
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate*
+.terraformrc
+crash.log
+
+# Terraform Cloud
+.terraform.d/
