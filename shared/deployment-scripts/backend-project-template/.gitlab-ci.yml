@@ -1,0 +1,102 @@
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+variables:
+  AWS_DEFAULT_REGION: us-east-2
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+  - docker:20.10.16-dind
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq git curl unzip
+  - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  - unzip awscliv2.zip
+  - ./aws/install
+
+build:
+  stage: build
+  image: docker:20.10.16
+  script:
+    - echo "Building and pushing Docker image..."
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+    - docker build -t $CI_PROJECT_NAME:$CI_COMMIT_SHA .
+    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+    - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+  only:
+    - main
+    - stage
+    - develop
+
+test:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - # Add your test commands here
+  only:
+    - main
+    - stage
+    - develop
+
+package:
+  stage: package
+  script:
+    - echo "Packaging application for deployment..."
+    - mkdir -p deployment-package
+    - cp -r appspec.yml scripts deployment-package/
+    - cd deployment-package
+    - zip -r ../deployment-$CI_COMMIT_SHA.zip .
+    - cd ..
+    - aws s3 cp deployment-$CI_COMMIT_SHA.zip s3://$S3_BUCKET/
+  artifacts:
+    paths:
+      - deployment-$CI_COMMIT_SHA.zip
+    expire_in: 1 hour
+  only:
+    - main
+    - stage
+
+deploy_stage:
+  stage: deploy
+  script:
+    - echo "Deploying to Stage environment..."
+    - export CLUSTER_NAME=$CLUSTER_NAME_STAGE
+    - export SERVICE_NAME=$SERVICE_NAME_STAGE
+    - |
+      DEPLOYMENT_ID=$(aws deploy create-deployment \
+        --application-name $CODEDEPLOY_APP_NAME \
+        --deployment-group-name $CODEDEPLOY_DEPLOYMENT_GROUP \
+        --s3-location bucket=$S3_BUCKET,key=deployment-$CI_COMMIT_SHA.zip,bundleType=zip \
+        --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+        --query 'deploymentId' --output text)
+    - echo "Deployment ID: $DEPLOYMENT_ID"
+    - aws deploy wait deployment-successful --deployment-id $DEPLOYMENT_ID
+  environment:
+    name: stage
+  only:
+    - stage
+
+deploy_prod:
+  stage: deploy
+  script:
+    - echo "Deploying to Production environment..."
+    - export CLUSTER_NAME=$CLUSTER_NAME_PROD
+    - export SERVICE_NAME=$SERVICE_NAME_PROD
+    - |
+      DEPLOYMENT_ID=$(aws deploy create-deployment \
+        --application-name $CODEDEPLOY_APP_NAME \
+        --deployment-group-name $CODEDEPLOY_DEPLOYMENT_GROUP \
+        --s3-location bucket=$S3_BUCKET,key=deployment-$CI_COMMIT_SHA.zip,bundleType=zip \
+        --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+        --query 'deploymentId' --output text)
+    - echo "Deployment ID: $DEPLOYMENT_ID"
+    - aws deploy wait deployment-successful --deployment-id $DEPLOYMENT_ID
+  environment:
+    name: production
+  when: manual
+  only:
+    - main
