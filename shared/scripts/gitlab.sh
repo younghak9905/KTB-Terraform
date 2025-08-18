@@ -89,6 +89,23 @@ wait_for_gitlab() {
 # GitLab 서비스가 준비될 때까지 대기
 wait_for_gitlab
 
+# AWS CLI 설치
+echo "$(date "+%Y-%m-%d %H:%M:%S") - AWS CLI 설치 중..." | tee -a ${LOG_FILE}
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" >> ${LOG_FILE} 2>&1
+unzip awscliv2.zip >> ${LOG_FILE} 2>&1
+./aws/install >> ${LOG_FILE} 2>&1
+rm -rf aws awscliv2.zip
+
+# CodeDeploy 에이전트 설치
+echo "$(date "+%Y-%m-%d %H:%M:%S") - CodeDeploy 에이전트 설치 중..." | tee -a ${LOG_FILE}
+yum install -y ruby wget >> ${LOG_FILE} 2>&1
+cd /home/ec2-user
+wget https://aws-codedeploy-us-east-2.s3.us-east-2.amazonaws.com/latest/install >> ${LOG_FILE} 2>&1
+chmod +x ./install
+./install auto >> ${LOG_FILE} 2>&1
+systemctl enable codedeploy-agent
+systemctl start codedeploy-agent
+
 # GitLab Runner Docker 설정
 echo "$(date "+%Y-%m-%d %H:%M:%S") - GitLab Runner 디렉토리 생성 중..." | tee -a ${LOG_FILE}
 mkdir -p /srv/gitlab-runner/config >> ${LOG_FILE} 2>&1

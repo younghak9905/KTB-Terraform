@@ -87,6 +87,24 @@ variable "alb_security_group_id" {
 }*/
 
 # 공통 변수
+variable "stage" {
+  description = "Environment stage"
+  type        = string
+  default     = "shared"
+}
+
+variable "servicename" {
+  description = "Service name"
+  type        = string
+  default     = "ktb"
+}
+
+variable "vpc_main_cidr" {
+  description = "Main VPC CIDR block"
+  type        = string
+  default     = "10.0.0.0/23"
+}
+
 variable "key_name" {
   description = "EC2 인스턴스의 SSH 키 이름"
   type        = string
