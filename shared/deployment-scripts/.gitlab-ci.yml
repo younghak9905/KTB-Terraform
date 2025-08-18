@@ -6,9 +6,11 @@ stages:
 
 variables:
   AWS_DEFAULT_REGION: us-east-2
-  CODEDEPLOY_APP_NAME: shared-ktb-app
-  CODEDEPLOY_DEPLOYMENT_GROUP: shared-ktb-dg
-  S3_BUCKET: shared-ktb-codedeploy-artifacts
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+  - docker:20.10.16-dind
 
 before_script:
   - apt-get update -qq && apt-get install -y -qq git curl unzip
@@ -18,10 +20,13 @@ before_script:
 
 build:
   stage: build
+  image: docker:20.10.16
   script:
-    - echo "Building application..."
+    - echo "Building and pushing Docker image..."
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
     - docker build -t $CI_PROJECT_NAME:$CI_COMMIT_SHA .
     - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+    - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_PROJECT_NAME:$CI_COMMIT_SHA
   only:
     - main
     - stage
@@ -59,12 +64,17 @@ deploy_stage:
   stage: deploy
   script:
     - echo "Deploying to Stage environment..."
+    - export CLUSTER_NAME=$CLUSTER_NAME_STAGE
+    - export SERVICE_NAME=$SERVICE_NAME_STAGE
     - |
-      aws deploy create-deployment \
+      DEPLOYMENT_ID=$(aws deploy create-deployment \
         --application-name $CODEDEPLOY_APP_NAME \
         --deployment-group-name $CODEDEPLOY_DEPLOYMENT_GROUP \
         --s3-location bucket=$S3_BUCKET,key=deployment-$CI_COMMIT_SHA.zip,bundleType=zip \
-        --deployment-config-name CodeDeployDefault.ECSAllAtOnce
+        --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+        --query 'deploymentId' --output text)
+    - echo "Deployment ID: $DEPLOYMENT_ID"
+    - aws deploy wait deployment-successful --deployment-id $DEPLOYMENT_ID
   environment:
     name: stage
   only:
@@ -74,12 +84,17 @@ deploy_prod:
   stage: deploy
   script:
     - echo "Deploying to Production environment..."
+    - export CLUSTER_NAME=$CLUSTER_NAME_PROD
+    - export SERVICE_NAME=$SERVICE_NAME_PROD
     - |
-      aws deploy create-deployment \
+      DEPLOYMENT_ID=$(aws deploy create-deployment \
         --application-name $CODEDEPLOY_APP_NAME \
         --deployment-group-name $CODEDEPLOY_DEPLOYMENT_GROUP \
         --s3-location bucket=$S3_BUCKET,key=deployment-$CI_COMMIT_SHA.zip,bundleType=zip \
-        --deployment-config-name CodeDeployDefault.ECSAllAtOnce
+        --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+        --query 'deploymentId' --output text)
+    - echo "Deployment ID: $DEPLOYMENT_ID"
+    - aws deploy wait deployment-successful --deployment-id $DEPLOYMENT_ID
   environment:
     name: production
   when: manual
