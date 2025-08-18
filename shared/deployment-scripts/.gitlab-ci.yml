@@ -1,0 +1,87 @@
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+variables:
+  AWS_DEFAULT_REGION: us-east-2
+  CODEDEPLOY_APP_NAME: shared-ktb-app
+  CODEDEPLOY_DEPLOYMENT_GROUP: shared-ktb-dg
+  S3_BUCKET: shared-ktb-codedeploy-artifacts
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq git curl unzip
+  - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  - unzip awscliv2.zip
+  - ./aws/install
+
+build:
+  stage: build
+  script:
+    - echo "Building application..."
+    - docker build -t $CI_PROJECT_NAME:$CI_COMMIT_SHA .
+    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+  only:
+    - main
+    - stage
+    - develop
+
+test:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - # Add your test commands here
+  only:
+    - main
+    - stage
+    - develop
+
+package:
+  stage: package
+  script:
+    - echo "Packaging application for deployment..."
+    - mkdir -p deployment-package
+    - cp -r appspec.yml scripts deployment-package/
+    - cd deployment-package
+    - zip -r ../deployment-$CI_COMMIT_SHA.zip .
+    - cd ..
+    - aws s3 cp deployment-$CI_COMMIT_SHA.zip s3://$S3_BUCKET/
+  artifacts:
+    paths:
+      - deployment-$CI_COMMIT_SHA.zip
+    expire_in: 1 hour
+  only:
+    - main
+    - stage
+
+deploy_stage:
+  stage: deploy
+  script:
+    - echo "Deploying to Stage environment..."
+    - |
+      aws deploy create-deployment \
+        --application-name $CODEDEPLOY_APP_NAME \
+        --deployment-group-name $CODEDEPLOY_DEPLOYMENT_GROUP \
+        --s3-location bucket=$S3_BUCKET,key=deployment-$CI_COMMIT_SHA.zip,bundleType=zip \
+        --deployment-config-name CodeDeployDefault.ECSAllAtOnce
+  environment:
+    name: stage
+  only:
+    - stage
+
+deploy_prod:
+  stage: deploy
+  script:
+    - echo "Deploying to Production environment..."
+    - |
+      aws deploy create-deployment \
+        --application-name $CODEDEPLOY_APP_NAME \
+        --deployment-group-name $CODEDEPLOY_DEPLOYMENT_GROUP \
+        --s3-location bucket=$S3_BUCKET,key=deployment-$CI_COMMIT_SHA.zip,bundleType=zip \
+        --deployment-config-name CodeDeployDefault.ECSAllAtOnce
+  environment:
+    name: production
+  when: manual
+  only:
+    - main
